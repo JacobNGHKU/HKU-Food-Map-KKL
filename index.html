@@ -288,16 +288,16 @@
     // ---------------------------
     const visitPoints = [
       // Historical
-      {id:1, name:"Main Building, The University of Hong Kong", type:"historical", icon:"🏛️", x:37.76, y:69.13, info:"The oldest structure on HKU Main Campus. Construction began in 1910 and completed in 1912. Exterior declared a monument in 1984."},
-      {id:2, name:"Hung Hing Ying Building, The University of Hong Kong", type:"historical", icon:"🏛️", x:37.16, y:80.56, info:"Opened in 1919, originally designed as the Union Building. Exterior declared a monument in 1995."},
-      {id:3, name:"Fung Ping Shan Building, The University of Hong Kong", type:"historical", icon:"🏛️", x:19.40, y:69.13, info:"Completed in 1932 as a Chinese library and later became part of the University Museum and Art Gallery. Exterior declared a monument in 2018."},
-      {id:4, name:"Tang Chi Ngong Building, The University of Hong Kong", type:"historical", icon:"🏛️", x:9.14, y:61.33, info:"Officially opened in 1931 for the School of Chinese. Exterior declared a monument in 1995."},
-      {id:5, name:"Eliot Hall, The University of Hong Kong", type:"historical", icon:"🏛️", x:9.98, y:33.39, info:"Opened in 1914 as a purpose-built student residential hall. Exterior declared a monument in 2018."},
-      {id:6, name:"May Hall, The University of Hong Kong", type:"historical", icon:"🏛️", x:5.88, y:25.04, info:"Opened in 1915 as a student hall and part of HKU’s Old Halls heritage. Exterior declared a monument in 2018."},
-      {id:7, name:"Bungalow and Workmen’s Quarters, West Point Filters", type:"historical", icon:"🏛️", x:26.17, y:10.71, info:"Remaining structures of historic West Point Filters (Pokfulam Filter Beds). Graded historic buildings."},
-      {id:8, name:"Senior Staff Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", x:78.22, y:67.68, info:"Built in 1925 for site managers. Now known as Run Run Shaw Heritage House. Grade 2 historic building."},
-      {id:9, name:"Workmen's Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", x:85.83, y:68.95, info:"Built between 1918 and 1919 as quarters for Chinese staff. Now HKU Visitor Centre. Grade 3 historic building."},
-      {id:10, name:"Treatment Works Building, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", x:90.90, y:41.55, info:"Built between 1930 and 1931 as a filtration plant. Grade 3 historic building."},
+      {id:1, name:"Main Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:3, x:37.76, y:69.13, info:"The oldest structure on HKU Main Campus. Construction began in 1910 and completed in 1912. Exterior declared a monument in 1984."},
+      {id:2, name:"Hung Hing Ying Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:37.16, y:80.56, info:"Opened in 1919, originally designed as the Union Building. Exterior declared a monument in 1995."},
+      {id:3, name:"Fung Ping Shan Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:19.40, y:69.13, info:"Completed in 1932 as a Chinese library and later became part of the University Museum and Art Gallery. Exterior declared a monument in 2018."},
+      {id:4, name:"Tang Chi Ngong Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:9.14, y:61.33, info:"Officially opened in 1931 for the School of Chinese. Exterior declared a monument in 1995."},
+      {id:5, name:"Eliot Hall, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:10, x:9.98, y:33.39, info:"Opened in 1914 as a purpose-built student residential hall. Exterior declared a monument in 2018."},
+      {id:6, name:"May Hall, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:10, x:5.88, y:25.04, info:"Opened in 1915 as a student hall and part of HKU’s Old Halls heritage. Exterior declared a monument in 2018."},
+      {id:7, name:"Bungalow and Workmen’s Quarters, West Point Filters", type:"historical", icon:"🏛️", walkMin:15, x:26.17, y:10.71, info:"Remaining structures of historic West Point Filters (Pokfulam Filter Beds). Graded historic buildings."},
+      {id:8, name:"Senior Staff Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:78.22, y:67.68, info:"Built in 1925 for site managers. Now known as Run Run Shaw Heritage House. Grade 2 historic building."},
+      {id:9, name:"Workmen's Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:85.83, y:68.95, info:"Built between 1918 and 1919 as quarters for Chinese staff. Now HKU Visitor Centre. Grade 3 historic building."},
+      {id:10, name:"Treatment Works Building, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:90.90, y:41.55, info:"Built between 1930 and 1931 as a filtration plant. Grade 3 historic building."},
 
       // Art Gallery / Museum
       {id:11, name:"University Museum & Art Gallery", type:"museum", icon:"🖼️", walkMin:5, building:"Fung Ping Shan Building", location:"1-2/F", hours:"Tuesday–Saturday 9:30am–6:00pm; Sunday 1:00pm–6:00pm; Closed on Mondays, Public and University Holidays.", x:17.36, y:70.22},
