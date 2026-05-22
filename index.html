@@ -102,7 +102,7 @@
     #campusMapWrap{
       position:relative;
       width:100%;
-      aspect-ratio:16/10;
+      aspect-ratio:var(--map-ratio, 1.6); /* dynamic from real image ratio */
       border-radius:14px;
       overflow:hidden;
       background:#fff;
@@ -275,8 +275,6 @@
       /* hide non-clickable legend chips on mobile */
       #legend{ display:none; }
 
-      #campusMapWrap{ aspect-ratio: 4/3; }
-
       #popup.mobile-sheet{
         position:fixed;
         left:12px !important;
@@ -310,7 +308,7 @@
         display:none !important;
       }
 
-      /* fullscreen map when route is playing */
+      /* fullscreen map when route is playing (keeps true map ratio) */
       body.route-mobile-fs .topbar,
       body.route-mobile-fs .title-card,
       body.route-mobile-fs .mobile-tabs{
@@ -318,10 +316,12 @@
       }
       body.route-mobile-fs #campusMapWrap{
         position:fixed;
-        inset:0;
-        width:100vw;
-        height:100dvh;
-        aspect-ratio:auto;
+        left:50%;
+        top:50%;
+        transform:translate(-50%,-50%);
+        width:min(100vw, calc(100dvh * var(--map-ratio, 1.6)));
+        height:min(100dvh, calc(100vw / var(--map-ratio, 1.6)));
+        aspect-ratio:var(--map-ratio, 1.6);
         max-height:none;
         border-radius:0;
         border:0;
@@ -497,6 +497,7 @@
     // ---------------- ELEMENTS ----------------
     const mapStage = document.getElementById('mapStage');
     const mapWrap = document.getElementById('campusMapWrap');
+    const mapImage = document.getElementById('mapImage');
     const routeLayer = document.getElementById('routeLayer');
     const popup = document.getElementById('popup');
     const list = document.getElementById('restaurantList');
@@ -547,6 +548,12 @@
     function isMobile(){ return window.matchMedia('(max-width:768px)').matches; }
     function maxScale(){ return isMobile() ? MAX_SCALE_MOBILE : MAX_SCALE_DESKTOP; }
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
+
+    function syncMapRatioFromImage(){
+      if (!mapImage.naturalWidth || !mapImage.naturalHeight) return;
+      const ratio = mapImage.naturalWidth / mapImage.naturalHeight;
+      mapWrap.style.setProperty('--map-ratio', ratio);
+    }
 
     function applyTransform(){
       mapStage.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
@@ -1179,6 +1186,7 @@
     }, {passive:false});
 
     window.addEventListener('resize', ()=>{
+      syncMapRatioFromImage();
       clampPan();
       applyTransform();
 
@@ -1198,6 +1206,9 @@
       mapWrap.parentNode.insertBefore(mobileTabs, mapWrap); // move tabs above map
     }
 
+    if (mapImage.complete) syncMapRatioFromImage();
+    else mapImage.addEventListener('load', syncMapRatioFromImage);
+
     createHereMarker();
     switchMode('food');
     applyTransform();
@@ -1206,4 +1217,3 @@
   </script>
 </body>
 </html>
-    
