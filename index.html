@@ -1,825 +1,643 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>HKU Campus Map</title>
   <style>
     :root{
-      --bg:#f7f8fc;
-      --panel:#ffffff;
-      --line:#d8deea;
-      --text:#1a2b49;
-      --muted:#5f6f8f;
-      --brand:#1f4ea3;
+      --bg:#f5f7fb;
+      --card:#fff;
+      --text:#172033;
+      --muted:#6b7485;
+      --line:#e6eaf2;
+      --blue:#2f6df6;
+      --blue-2:#1746b8;
       --chip:#eef3ff;
-      --drawer-peek: 92px;
+      --shadow:0 10px 24px rgba(17,24,39,.08);
+      --r:14px;
     }
-
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
       background:var(--bg);
     }
-
     .container{
-      width:min(1400px, 96vw);
-      margin:16px auto 24px;
+      max-width:1280px;
+      margin:20px auto;
+      padding:0 14px 30px;
     }
-
-    .header{
-      background:var(--panel);
+    .topbar{
+      background:var(--card);
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px;
-      margin-bottom:12px;
+      border-radius:var(--r);
+      padding:12px;
+      box-shadow:var(--shadow);
     }
-    .header h1{
-      margin:0 0 8px;
-      font-size:22px;
+    .title{
+      margin:0 0 10px;
+      font-size:20px;
+      font-weight:800;
     }
-    .header p{
-      margin:0;
-      color:var(--muted);
-      font-size:14px;
+    .mode-row{
+      display:flex; gap:8px; flex-wrap:wrap;
     }
-
-    .mode-switch{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-
-    .mobile-tabs{
-      display:none;
-      margin-top:10px;
-      gap:8px;
-    }
-
     .btn{
       border:1px solid var(--line);
       background:#fff;
       color:var(--text);
       border-radius:10px;
-      padding:8px 12px;
+      padding:9px 12px;
+      font-weight:700;
       cursor:pointer;
-      font-weight:600;
-      font-size:14px;
     }
-    .btn:hover{ border-color:#b9c7e3; }
     .btn.active{
-      background:#1f4ea3;
+      background:var(--blue);
       color:#fff;
-      border-color:#1f4ea3;
+      border-color:var(--blue);
     }
-
-    .toolbar{
-      margin-top:10px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
+    .hint{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:13px;
     }
 
     .layout{
+      margin-top:12px;
       display:grid;
-      grid-template-columns: minmax(280px, 360px) 1fr;
+      grid-template-columns: 1fr 360px;
       gap:12px;
       align-items:start;
     }
-
-    .panel{
-      background:var(--panel);
+    .card{
+      background:var(--card);
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
     }
 
-    .list-panel{
-      position:relative;
-      z-index:20;
-    }
-    .list-panel h3{
-      margin:0 0 4px;
-      font-size:18px;
-    }
-    .list-panel .small{
-      color:var(--muted);
-      margin:0 0 10px;
-      font-size:13px;
-    }
-
-    .drawer-handle{
-      display:none;
-      width:100%;
-      padding:4px 0 8px;
-      cursor:grab;
-      touch-action:none;
-    }
-    .drawer-handle span{
-      display:block;
-      width:44px;
-      height:5px;
-      border-radius:99px;
-      margin:0 auto;
-      background:#c9d4ea;
-    }
-
-    #filterBar{
+    .map-card{ padding:10px; }
+    .map-head{
       display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-bottom:10px;
-    }
-
-    .chip{
-      display:inline-flex;
+      justify-content:space-between;
       align-items:center;
-      gap:6px;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .map-title{ margin:0; font-size:18px; }
+    .map-note{ margin:4px 0 0; font-size:13px; color:var(--muted); }
+
+    .filter-bar, .legend{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .chip{
       border:1px solid var(--line);
-      background:var(--chip);
+      background:#fff;
       border-radius:999px;
       padding:6px 10px;
       font-size:12px;
-      color:#1f3767;
+      cursor:pointer;
       user-select:none;
     }
-    .chip input{ margin:0; }
+    .chip.active{
+      background:var(--chip);
+      border-color:#cfdcff;
+      color:var(--blue-2);
+      font-weight:700;
+    }
+    .legend .chip{ cursor:default; }
 
-    .list{
-      list-style:none;
-      margin:0;
-      padding:0;
-      max-height:72vh;
-      overflow:auto;
+    .mobile-tabs{
+      display:none;
+      gap:8px;
+      margin-bottom:8px;
     }
-    .list li{ margin:0 0 8px; }
-    .list button{
-      width:100%;
-      text-align:left;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:10px;
-      padding:10px;
-      cursor:pointer;
-    }
-    .list button:hover{ border-color:#b7c8ee; }
-    .list button.active{
-      border-color:#1f4ea3;
-      box-shadow:0 0 0 2px rgba(31,78,163,.15);
-    }
-    .name{ font-weight:700; font-size:14px; margin-bottom:4px; }
-    .meta{ color:var(--muted); font-size:12px; line-height:1.35; }
-
-    .map-panel h2{
-      margin:0 0 6px;
-      font-size:20px;
-    }
-    .map-note{
-      margin:0 0 10px;
-      color:var(--muted);
-      font-size:13px;
-    }
+    .mobile-tabs .btn{ flex:1; }
 
     .map-wrap{
       position:relative;
       width:100%;
-      aspect-ratio: 16 / 10;
+      aspect-ratio: 16 / 9;
+      overflow:hidden;
       border:1px solid var(--line);
       border-radius:12px;
-      overflow:hidden;
-      background:#fff;
-      touch-action:none;
+      background:#dbe4f5;
+      touch-action:none; /* required for custom pinch/pan */
     }
-
-    #mapStage{
-      position:relative;
-      width:100%;
-      height:100%;
+    .map-stage{
+      position:absolute; inset:0;
       transform-origin:0 0;
-      transform:translate(0px,0px) scale(1);
-      transition:transform .18s ease;
       will-change:transform;
     }
-
     #campusMap{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      display:block;
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:fill; /* must match SVG geometry */
       user-select:none;
       -webkit-user-drag:none;
-      pointer-events:auto;
-      background:#f0f4ff;
+      pointer-events:none;
     }
-
-    .zoom-controls{
-      position:absolute;
-      right:10px;
-      top:10px;
-      z-index:90;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .zoom-controls .btn{
-      width:40px;
-      height:40px;
-      padding:0;
-      border-radius:10px;
-      font-size:20px;
-      line-height:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
     .route-layer{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
+      position:absolute; inset:0;
+      width:100%; height:100%;
       z-index:15;
       pointer-events:none;
     }
     .route-line{
       fill:none;
-      stroke:#1f4ea3;
-      stroke-width:0.85;
+      stroke:#1d70f7;
+      stroke-width:0.7;
       stroke-linecap:round;
       stroke-linejoin:round;
-      stroke-dasharray:2 1.2;
+      stroke-dasharray:2.4 1.2;
     }
-    .route-start-dot{ fill:#0ea5e9; }
-    .route-end-dot{ fill:#1f4ea3; }
+    .route-start-dot{ fill:#1d70f7; }
+    .route-end-dot{ fill:#ff5252; }
 
     .marker{
       position:absolute;
-      transform:translate(-50%, -50%);
-      width:28px;
-      height:28px;
-      border-radius:50%;
-      border:1px solid #bfd0f2;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:16px;
-      cursor:pointer;
-      z-index:25;
-      box-shadow:0 3px 10px rgba(0,0,0,.14);
+      transform:translate(-50%,-50%);
+      width:31px; height:31px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.7);
+      background:rgba(255,255,255,.96);
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
+      display:flex; align-items:center; justify-content:center;
+      font-size:17px; cursor:pointer;
+      z-index:20;
     }
-    .marker:hover{ transform:translate(-50%, -50%) scale(1.06); }
     .marker.active{
-      border:2px solid #1f4ea3;
-      box-shadow:0 0 0 3px rgba(31,78,163,.18);
+      outline:2px solid var(--blue);
+      transform:translate(-50%,-50%) scale(1.08);
     }
-    .marker.here{
-      border:2px solid #ef4444;
-      z-index:30;
-      width:30px;
-      height:30px;
-    }
-    .marker.walker{
-      background:#fff;
-      border:2px solid #1f4ea3;
-      width:30px;
-      height:30px;
-      z-index:32;
-      cursor:default;
-    }
+    .marker.here{ background:#fff6dd; }
+    .marker.walker{ z-index:26; }
+    .marker.station{ z-index:25; }
 
     .popup{
       position:absolute;
-      z-index:70;
-      min-width:240px;
-      max-width:min(380px, 88vw);
+      z-index:40;
+      display:none;
+      width:min(340px, 90%);
       background:#fff;
       border:1px solid var(--line);
       border-radius:10px;
-      padding:10px;
-      box-shadow:0 10px 24px rgba(0,0,0,.22);
-      display:none;
+      padding:10px 11px;
+      box-shadow:0 12px 24px rgba(0,0,0,.18);
       font-size:13px;
-      line-height:1.4;
+      line-height:1.35;
     }
-    .popup h4{ margin:0 0 6px; font-size:14px; }
-    .popup p{ margin:0 0 4px; }
-
-    .legend{
-      margin-top:10px;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+    .popup h4{ margin:0 0 4px; font-size:14px; }
+    .popup .row{ margin-top:4px; color:#374056; }
+    .popup.mobile-sheet{
+      position:fixed !important;
+      left:10px !important; right:10px !important;
+      bottom:10px !important; top:auto !important;
+      width:auto !important; max-width:none !important;
+      max-height:34vh; overflow:auto;
     }
 
-    .walk-time{
-      display:inline-block;
-      border-radius:999px;
-      padding:2px 8px;
-      font-size:12px;
-      font-weight:700;
-      border:1px solid transparent;
+    .list-card{
+      padding:10px;
+      min-height:420px;
     }
-    .walk-green{ color:#0f6b2d; background:#e9f9ee; border-color:#bceacb; }
-    .walk-orange{ color:#8a5300; background:#fff4e5; border-color:#f7d7a6; }
-    .walk-red{ color:#8f1d1d; background:#ffeaea; border-color:#f5baba; }
+    .list-head{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:8px;
+    }
+    .list-title{ margin:0; font-size:16px; }
+    .count{ font-size:13px; color:var(--muted); }
 
-    #mapSection.route-mode .layout{ grid-template-columns:1fr; }
-    #mapSection.route-mode .list-panel,
-    #mapSection.route-mode #filterBar,
-    #mapSection.route-mode #legend{ display:none; }
+    .list{
+      list-style:none;
+      margin:0; padding:0;
+      max-height:70vh; overflow:auto;
+      border-top:1px solid var(--line);
+    }
+    .list li{ border-bottom:1px solid var(--line); }
+    .list button{
+      width:100%;
+      text-align:left;
+      border:0; background:transparent;
+      padding:10px 4px;
+      cursor:pointer;
+    }
+    .list button.active{ background:#f3f7ff; }
+    .i1{ font-weight:700; font-size:14px; }
+    .i2,.i3{ font-size:12px; color:var(--muted); margin-top:3px; }
 
     .route-hint{
-      position:absolute;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      z-index:80;
-      background:#ffffff;
-      border:2px solid #1f4ea3;
-      border-radius:14px;
-      padding:12px 16px;
-      box-shadow:0 12px 28px rgba(0,0,0,.25);
-      font-size:16px;
+      margin-top:8px;
+      font-size:13px;
+      color:#0d47a1;
       font-weight:700;
-      color:#0d2f6f;
-      text-align:center;
-      width:min(90%, 620px);
-      pointer-events:none;
       display:none;
     }
 
-    .prompt-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.35);
+    .station-modal{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.42);
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:200;
+      z-index:300;
+      padding:14px;
     }
-    .prompt-backdrop.show{ display:flex; }
-    .prompt-card{
+    .station-modal.show{ display:flex; }
+    .station-box{
+      width:min(420px, 96vw);
       background:#fff;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:16px;
-      width:min(92vw, 420px);
-      box-shadow:0 10px 24px rgba(0,0,0,.25);
-    }
-    .prompt-actions{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-top:8px;
-    }
-
-    .popup.mobile-sheet{
-      position:fixed !important;
-      left:12px !important;
-      right:12px !important;
-      bottom:12px !important;
-      top:auto !important;
-      width:auto !important;
-      max-width:none !important;
-      max-height:45vh;
-      overflow:auto;
       border-radius:14px;
-      z-index:320;
+      border:1px solid var(--line);
+      padding:12px;
     }
-
-    a{ color:#1f4ea3; }
+    .station-box h3{ margin:0 0 8px; }
+    .station-actions{ display:grid; gap:8px; margin-top:8px; }
+    .station-actions .btn{ width:100%; }
 
     @media (max-width: 768px){
-      .container{
-        width:100vw;
-        margin:0;
-        padding:8px;
-      }
-
-      .header,.panel{
-        border-radius:12px;
-        padding:10px;
-      }
-
-      .layout{
-        display:block;
-      }
-
-      .map-panel{ margin-bottom:10px; }
-
+      .layout{ display:block; }
       .map-wrap{
-        aspect-ratio: 3 / 4;
+        aspect-ratio:auto;
+        height:68vh;
+        min-height:460px;
       }
-
-      .toolbar{
-        align-items:stretch;
-      }
-      .toolbar .btn{
-        width:100%;
-        min-height:44px;
-      }
-
-      .btn,.list button,.chip{
-        min-height:44px;
-        font-size:15px;
-      }
-
-      #filterBar{
-        flex-wrap:nowrap;
-        overflow-x:auto;
-        -webkit-overflow-scrolling:touch;
-        padding-bottom:4px;
-      }
-      #filterBar .chip{
-        white-space:nowrap;
-        flex:0 0 auto;
-      }
-
-      .mobile-tabs{
-        display:flex;
-      }
-      .mobile-tabs .btn{
-        flex:1;
-      }
-
-      #mapSection:not(.route-mode) .list-panel{
+      .mobile-tabs{ display:flex; }
+      .list-card{
         position:fixed;
-        left:8px;
-        right:8px;
-        bottom:8px;
-        height:min(74vh, 620px);
+        left:0; right:0; bottom:0;
         z-index:250;
-        box-shadow:0 14px 30px rgba(0,0,0,.25);
-        border-radius:14px 14px 12px 12px;
-        touch-action:none;
+        border-radius:16px 16px 0 0;
+        max-height:62vh;
+        transform:translateY(calc(100% - 56px));
+        transition:transform .22s ease;
       }
-
-      #mapSection:not(.route-mode) .list{
-        max-height:calc(74vh - 170px);
-      }
-
+      .list-card.open{ transform:translateY(0); }
       .drawer-handle{
-        display:block;
+        width:44px; height:5px;
+        border-radius:99px;
+        background:#ced5e5;
+        margin:2px auto 10px;
       }
-
-      .route-hint{
-        font-size:14px;
-        padding:10px 12px;
-        width:min(94%, 560px);
-      }
-
-      #mapSection.route-mode .mobile-tabs{
-        display:none;
+      .list{
+        max-height:calc(62vh - 110px);
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <section class="header">
-      <h1>HKU Campus Map</h1>
-      <p id="mapTitle">HKU Main Campus Map (Food Map)</p>
-
-      <div class="mode-switch">
-        <button class="btn active" id="foodModeBtn">🍱 Food Map</button>
-        <button class="btn" id="visitModeBtn">🏛️ Visit Map</button>
-        <button class="btn" id="routeModeBtn">🚶 To KKL</button>
+    <section class="topbar">
+      <h1 class="title">HKU Campus Map</h1>
+      <div class="mode-row">
+        <button id="foodModeBtn" class="btn active">🍱 Food Map</button>
+        <button id="visitModeBtn" class="btn">🏛️ Visit Map</button>
+        <button id="routeModeBtn" class="btn">🚶 To KKL</button>
+        <button id="resetZoomBtn" class="btn">Reset zoom</button>
       </div>
-
-      <div class="toolbar">
-        <p id="mapNote" style="margin:0;color:var(--muted);font-size:13px;">Walking time shown is from KKL Building.</p>
-        <button class="btn" id="resetZoomBtn">Reset zoom</button>
-      </div>
-
-      <div class="mobile-tabs" id="mobileTabs">
-        <button class="btn active" id="mobileMapTabBtn">🗺️ Map</button>
-        <button class="btn" id="mobileListTabBtn">📋 List</button>
-      </div>
+      <div class="hint" id="mapNoteInline">Walking time shown is from KKL Building.</div>
     </section>
 
-    <section id="mapSection">
-      <div class="layout">
-        <aside class="panel list-panel" id="listPanel">
-          <div class="drawer-handle" id="drawerHandle" aria-label="Drag to open list"><span></span></div>
-          <h3><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
-          <p class="small">Select a point from the list or map.</p>
-          <div id="filterBar"></div>
-          <ul id="restaurantList" class="list"></ul>
-        </aside>
-
-        <section class="panel map-panel">
-          <h2 id="mapTitleInline">HKU Main Campus Map</h2>
-          <p class="map-note" id="mapNoteInline">Walking time shown is from KKL Building.</p>
-
-          <div class="map-wrap" id="campusMapWrap">
-            <div class="zoom-controls" id="zoomControls">
-              <button class="btn" id="zoomInBtn" aria-label="Zoom in">＋</button>
-              <button class="btn" id="zoomOutBtn" aria-label="Zoom out">－</button>
-            </div>
-
-            <div id="mapStage">
-              <img id="campusMap" src="./Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU Main Campus Map">
-              <svg id="routeLayer" class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-              <div id="popup" class="popup"></div>
-              <div id="routeHint" class="route-hint"></div>
-            </div>
+    <div class="layout">
+      <section id="mapSection" class="card map-card">
+        <div class="map-head">
+          <div>
+            <h2 id="mapTitle" class="map-title">HKU Main Campus Map (Food Map)</h2>
+            <p id="mapNote" class="map-note">Walking time shown is from KKL Building.</p>
           </div>
+        </div>
 
-          <div id="legend" class="legend"></div>
-        </section>
-      </div>
-    </section>
+        <div id="filterBar" class="filter-bar"></div>
+        <div id="legend" class="legend"></div>
+
+        <div class="mobile-tabs">
+          <button id="mapTabBtn" class="btn active">🗺️ Map</button>
+          <button id="listTabBtn" class="btn">📋 List</button>
+        </div>
+
+        <div id="campusMapWrap" class="map-wrap">
+          <div id="mapStage" class="map-stage">
+            <!-- Replace src with your real map image path -->
+            <img id="campusMap" src="hku-main-campus-map.jpg" alt="HKU Main Campus Map" />
+            <svg id="routeLayer" class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+          </div>
+          <div id="popup" class="popup"></div>
+        </div>
+        <div id="routeHint" class="route-hint"></div>
+      </section>
+
+      <aside id="listPanel" class="card list-card">
+        <div class="drawer-handle" id="drawerHandle"></div>
+        <div class="list-head">
+          <h3 class="list-title"><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
+        </div>
+        <ul id="restaurantList" class="list"></ul>
+      </aside>
+    </div>
   </div>
 
-  <div id="stationPrompt" class="prompt-backdrop" role="dialog" aria-modal="true" aria-labelledby="stationPromptTitle">
-    <div class="prompt-card">
-      <h3 id="stationPromptTitle" style="margin:0 0 10px;">Where are you coming from?</h3>
-      <div class="prompt-actions">
+  <div id="stationPrompt" class="station-modal">
+    <div class="station-box">
+      <h3>Where are you coming from?</h3>
+      <div class="station-actions">
         <button class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
         <button class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
-        <button class="btn" id="cancelStationPrompt">Cancel</button>
+        <button id="cancelStationPrompt" class="btn">Cancel</button>
       </div>
     </div>
   </div>
 
   <script>
+    // ---------------- DATA ----------------
     const restaurants = [
-      {id:1,  name:"Chong Yuet Ming Amenities Centre Restaurant & HK Daily", building:"Chong Yuet Ming Cultural Centre", location:"4/F", type:"canteen", icon:"🍱", food:"Local fast food and Chaa Chaan Teng", walkMin:3, x:16.60, y:34.70},
-      {id:2,  name:"Café 330", building:"Chong Yuet Ming Amenities Centre", location:"2/F", type:"cafe", icon:"☕", food:"Hot meal, salads, sandwiches and coffee", walkMin:3, x:17.75, y:34.85},
-      {id:3,  name:"Vending Hub", building:"Chong Yuet Ming Amenities Centre", location:"G/F", type:"vending", icon:"🥡", food:"Vending service for ready-to-eat box lunches, Chinese rice ball, Japanese rice ball, dessert, snacks, coffee and beverages", walkMin:3, x:17.13, y:35.17},
-      {id:4,  name:"Fong Shu Chuen Amenities Centre Restaurant", building:"Fong Shu Chuen Amenities Centre", location:"2/F", type:"asian", icon:"🍜", food:"Local fast food and Asian food", walkMin:3, x:16.20, y:59.95},
-      {id:5,  name:"27 Kebab House", building:"Fong Shu Chuen Amenities Centre", location:"1/F", type:"halal", icon:"🕌", food:"Halal food and beverages", walkMin:3, x:16.64, y:60.39},
-      {id:6,  name:"SUBWAY", building:"Run Run Shaw Podium", location:"Podium", type:"western", icon:"🥪", food:"Submarine sandwiches and beverages", walkMin:5, x:36.60, y:36.00},
-      {id:7,  name:"Kiosk by The Sandwich Club", building:"Run Run Shaw Podium", location:"Podium", type:"western", icon:"🥪", food:"Bento boxes, pastries, sandwiches and salads", walkMin:5, x:37.01, y:36.42},
-      {id:8,  name:"The Coffee Academics", building:"Library Building (Old Wing)", location:"G/F", type:"cafe", icon:"☕", food:"Specialty coffee, sandwiches and salads", walkMin:3, x:39.51, y:57.52},
-      {id:9,  name:"Union Restaurant", building:"Haking Wong Building", location:"4/F", type:"asian", icon:"🍜", food:"Local fast food and Asian food", walkMin:7, x:59.06, y:45.91},
-      {id:10, name:"Vending Nook", building:"Composite Building", location:"G/F", type:"vending", icon:"🥡", food:"24/7 vending service for ready-to-eat Japanese rice ball, dessert, snacks and beverages", walkMin:7, x:67.70, y:47.30},
-      {id:11, name:"Starbucks Coffee", building:"Composite Building", location:"G/F", type:"cafe", icon:"☕", food:"Coffee, pastries, sandwiches and salads", walkMin:7, x:68.10, y:48.50},
-      {id:12, name:"Tai Tai Foodtopia", building:"Composite Building", location:"G/F", type:"asian", icon:"🍜", food:"Taiwanese beverages, hot meals, noodles, desserts and snacks", walkMin:7, x:68.80, y:47.40},
-      {id:13, name:"OORI HANSIK", building:"Composite Building", location:"G/F", type:"asian", icon:"🍜", food:"Korean food, hot meals, fried chicken, snacks and coffee", walkMin:7, x:68.29, y:47.91},
-      {id:14, name:"Oliver’s Super Sandwiches", building:"The Jockey Club Tower, Centennial Campus", location:"LG/F", type:"western", icon:"🥪", food:"Sandwiches, baked potato, pasta, salad and coffee", walkMin:10, x:82.55, y:49.95},
-      {id:15, name:"alfafa café", building:"The Jockey Club Tower, Centennial Campus", location:"G/F", type:"cafe", icon:"☕", food:"Pasta, sandwiches, salads, pastries and specialty coffee", walkMin:10, x:83.01, y:50.40},
-      {id:16, name:"Gourmet Asia", building:"Run Run Shaw Tower, Centennial Campus", location:"G/F", type:"asian", icon:"🍜", food:"Southeast Asia cuisine", walkMin:13, x:81.20, y:60.60},
-      {id:17, name:"BIJAS Vegetarian", building:"Run Run Shaw Tower, Centennial Campus", location:"G/F", type:"vegetarian", icon:"🥗", food:"Vegetarian food (Chinese cuisine)", walkMin:13, x:81.68, y:61.01},
-      {id:18, name:"The Good Bridge (Staff Only)", building:"Jockey Club Tower, Centennial Campus", location:"4/F", type:"western", icon:"🍽️", food:"Western food and Chinese food", walkMin:10, x:83.01, y:50.40, access:"Staff Only"},
-      {id:19, name:"Senior Common Room (SCR Club Members Only)", building:"KKL Building", location:"14-15/F", type:"western", icon:"🍽️", food:"Western food and Chinese food", walkMin:1, x:24.04, y:53.71, access:"SCR Club Members Only"}
+      {id:1,name:"Chong Yuet Ming Amenities Centre Restaurant & HK Daily",building:"Chong Yuet Ming Cultural Centre",location:"4/F",type:"canteen",icon:"🍱",food:"Local fast food and Chaa Chaan Teng",walkMin:3,x:16.60,y:34.70},
+      {id:2,name:"Café 330",building:"Chong Yuet Ming Amenities Centre",location:"2/F",type:"cafe",icon:"☕",food:"Hot meal, salads, sandwiches and coffee",walkMin:3,x:17.75,y:34.85},
+      {id:3,name:"Vending Hub",building:"Chong Yuet Ming Amenities Centre",location:"G/F",type:"vending",icon:"🥡",food:"Ready-to-eat box lunches/snacks/drinks",walkMin:3,x:17.13,y:35.17},
+      {id:4,name:"Fong Shu Chuen Amenities Centre Restaurant",building:"Fong Shu Chuen Amenities Centre",location:"2/F",type:"asian",icon:"🍜",food:"Local fast food and Asian food",walkMin:3,x:16.20,y:59.95},
+      {id:5,name:"27 Kebab House",building:"Fong Shu Chuen Amenities Centre",location:"1/F",type:"halal",icon:"🕌",food:"Halal food and beverages",walkMin:3,x:16.64,y:60.39},
+      {id:6,name:"SUBWAY",building:"Run Run Shaw Podium",location:"Podium",type:"western",icon:"🥪",food:"Submarine sandwiches and beverages",walkMin:5,x:36.60,y:36.00},
+      {id:7,name:"Kiosk by The Sandwich Club",building:"Run Run Shaw Podium",location:"Podium",type:"western",icon:"🥪",food:"Bento boxes, pastries, sandwiches and salads",walkMin:5,x:37.01,y:36.42},
+      {id:8,name:"The Coffee Academics",building:"Library Building (Old Wing)",location:"G/F",type:"cafe",icon:"☕",food:"Specialty coffee, sandwiches and salads",walkMin:3,x:39.51,y:57.52},
+      {id:9,name:"Union Restaurant",building:"Haking Wong Building",location:"4/F",type:"asian",icon:"🍜",food:"Local fast food and Asian food",walkMin:7,x:59.06,y:45.91},
+      {id:10,name:"Vending Nook",building:"Composite Building",location:"G/F",type:"vending",icon:"🥡",food:"24/7 vending service",walkMin:7,x:67.70,y:47.30},
+      {id:11,name:"Starbucks Coffee",building:"Composite Building",location:"G/F",type:"cafe",icon:"☕",food:"Coffee, pastries, sandwiches and salads",walkMin:7,x:68.10,y:48.50},
+      {id:12,name:"Tai Tai Foodtopia",building:"Composite Building",location:"G/F",type:"asian",icon:"🍜",food:"Taiwanese beverages and hot meals",walkMin:7,x:68.80,y:47.40},
+      {id:13,name:"OORI HANSIK",building:"Composite Building",location:"G/F",type:"asian",icon:"🍜",food:"Korean food and snacks",walkMin:7,x:68.29,y:47.91},
+      {id:14,name:"Oliver’s Super Sandwiches",building:"The Jockey Club Tower, Centennial Campus",location:"LG/F",type:"western",icon:"🥪",food:"Sandwiches, pasta, salad and coffee",walkMin:10,x:82.55,y:49.95},
+      {id:15,name:"alfafa café",building:"The Jockey Club Tower, Centennial Campus",location:"G/F",type:"cafe",icon:"☕",food:"Pasta, sandwiches, salads and coffee",walkMin:10,x:83.01,y:50.40},
+      {id:16,name:"Gourmet Asia",building:"Run Run Shaw Tower, Centennial Campus",location:"G/F",type:"asian",icon:"🍜",food:"Southeast Asia cuisine",walkMin:13,x:81.20,y:60.60},
+      {id:17,name:"BIJAS Vegetarian",building:"Run Run Shaw Tower, Centennial Campus",location:"G/F",type:"vegetarian",icon:"🥗",food:"Vegetarian food (Chinese cuisine)",walkMin:13,x:81.68,y:61.01},
+      {id:18,name:"The Good Bridge (Staff Only)",building:"Jockey Club Tower, Centennial Campus",location:"4/F",type:"western",icon:"🍽️",food:"Western and Chinese food",walkMin:10,x:83.01,y:50.40,access:"Staff Only"},
+      {id:19,name:"Senior Common Room (SCR Club Members Only)",building:"KKL Building",location:"14-15/F",type:"western",icon:"🍽️",food:"Western and Chinese food",walkMin:1,x:24.04,y:53.71,access:"SCR Club Members Only"}
     ];
 
     const visitPoints = [
-      {id:1, name:"Main Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:3, x:37.76, y:69.13, info:"The oldest structure on HKU Main Campus. Construction began in 1910 and completed in 1912. Exterior declared a monument in 1984."},
-      {id:2, name:"Hung Hing Ying Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:37.16, y:80.56, info:"Opened in 1919, originally designed as the Union Building. Exterior declared a monument in 1995."},
-      {id:3, name:"Fung Ping Shan Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:19.40, y:69.13, info:"Completed in 1932 as a Chinese library and later became part of the University Museum and Art Gallery. Exterior declared a monument in 2018."},
-      {id:4, name:"Tang Chi Ngong Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:9.14, y:61.33, info:"Officially opened in 1931 for the School of Chinese. Exterior declared a monument in 1995."},
-      {id:5, name:"Eliot Hall, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:10, x:9.98, y:33.39, info:"Opened in 1914 as a purpose-built student residential hall. Exterior declared a monument in 2018."},
-      {id:6, name:"May Hall, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:10, x:5.88, y:25.04, info:"Opened in 1915 as a student hall and part of HKU’s Old Halls heritage. Exterior declared a monument in 2018."},
-      {id:7, name:"Bungalow and Workmen’s Quarters, West Point Filters", type:"historical", icon:"🏛️", walkMin:15, x:26.17, y:10.71, info:"Remaining structures of historic West Point Filters (Pokfulam Filter Beds). Graded historic buildings."},
-      {id:8, name:"Senior Staff Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:78.22, y:67.68, info:"Built in 1925 for site managers. Now known as Run Run Shaw Heritage House. Grade 2 historic building."},
-      {id:9, name:"Workmen's Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:85.83, y:68.95, info:"Built between 1918 and 1919 as quarters for Chinese staff. Now HKU Visitor Centre. Grade 3 historic building."},
-      {id:10, name:"Treatment Works Building, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:90.90, y:41.55, info:"Built between 1930 and 1931 as a filtration plant. Grade 3 historic building."},
-      {id:11, name:"University Museum & Art Gallery", type:"museum", icon:"🖼️", walkMin:5, building:"Fung Ping Shan Building", location:"1-2/F", hours:"Tuesday–Saturday 9:30am–6:00pm; Sunday 1:00pm–6:00pm; Closed on Mondays, Public and University Holidays.", x:17.36, y:70.22},
-      {id:12, name:"Stephen Hui Geological Museum", type:"museum", icon:"🖼️", walkMin:5, building:"James Lee Science Building", location:"G-1/F", hours:"Mondays to Fridays from 1:00pm to 6:00pm. Closed on Saturdays, Sundays, Public and University Holidays (March 16, December 24, 31 and Chinese New Year Eve). Weekday mornings are reserved for guided group tours.", info:"We welcome individual visitors to walk in during opening hours, free of charge.", x:47.54, y:37.88},
-      {id:13, name:"Jao Tsung-I Petite Ecole", type:"museum", icon:"🖼️", walkMin:3, building:"Tang Chi Ngong Building", hours:"10:00am – 5:00pm Monday to Friday (Closed on Saturdays, Sundays & University/Public Holidays)", x:12.04, y:61.00},
-      {id:14, name:"Hong Kong Biodiversity Museum", type:"museum", icon:"🖼️", walkMin:5, building:"Kadoorie Biological Sciences Building", location:"2/F", hours:"Wed, Sat, Sun (45 min session)", bookingUrl:"https://www.hkbiodiversitymuseum.org/booking-calendar/%E5%8D%9A%E9%81%8A%E7%94%9F%E7%89%A9-biodiversity-journey", x:47.38, y:55.57},
-      {id:15, name:"Visitor Centre (Souvenir Shop)", type:"souvenir", icon:"🛍️", walkMin:13, hours:"9:30AM – 5:00PM (Mon – Sat); 11:00AM – 5:00PM (Sun); Closed on University and Public Holidays", x:83.70, y:68.93},
-      {id:16, name:"HKUP Bookshop", type:"souvenir", icon:"🛍️", walkMin:13, building:"Run Run Shaw Heritage House", location:"G/F", hours:"Monday to Friday 10:00am to 5:00pm (closes on Public and University holidays)", x:80.57, y:67.75},
-      {id:17, name:"Red Brick Wall", type:"photo", icon:"📸", walkMin:10, x:88.67, y:62.53},
-      {id:18, name:"Main Building", type:"photo", icon:"📸", walkMin:5, x:37.65, y:74.02},
-      {id:19, name:"Lily Pond", type:"photo", icon:"📸", walkMin:5, x:30.21, y:44.61},
-      {id:20, name:"May Hall and Elliot Hall", type:"photo", icon:"📸", walkMin:13, x:6.11, y:31.36}
+      {id:1,name:"Main Building, The University of Hong Kong",type:"historical",icon:"🏛️",walkMin:3,x:37.76,y:69.13,info:"Oldest structure on Main Campus (1910–1912)."},
+      {id:2,name:"Hung Hing Ying Building, The University of Hong Kong",type:"historical",icon:"🏛️",walkMin:5,x:37.16,y:80.56,info:"Opened in 1919; monument exterior."},
+      {id:3,name:"Fung Ping Shan Building, The University of Hong Kong",type:"historical",icon:"🏛️",walkMin:5,x:19.40,y:69.13,info:"Completed in 1932; UMAG heritage."},
+      {id:4,name:"Tang Chi Ngong Building, The University of Hong Kong",type:"historical",icon:"🏛️",walkMin:5,x:9.14,y:61.33,info:"Officially opened in 1931."},
+      {id:5,name:"Eliot Hall, The University of Hong Kong",type:"historical",icon:"🏛️",walkMin:10,x:9.98,y:33.39,info:"Purpose-built student hall, opened 1914."},
+      {id:6,name:"May Hall, The University of Hong Kong",type:"historical",icon:"🏛️",walkMin:10,x:5.88,y:25.04,info:"Opened in 1915 as a student hall."},
+      {id:7,name:"Bungalow and Workmen’s Quarters, West Point Filters",type:"historical",icon:"🏛️",walkMin:15,x:26.17,y:10.71,info:"Historic West Point Filters remains."},
+      {id:8,name:"Senior Staff Quarters, Elliot Pumping Station and Filters",type:"historical",icon:"🏛️",walkMin:15,x:78.22,y:67.68,info:"Built in 1925; now Run Run Shaw Heritage House."},
+      {id:9,name:"Workmen's Quarters, Elliot Pumping Station and Filters",type:"historical",icon:"🏛️",walkMin:15,x:85.83,y:68.95,info:"Now HKU Visitor Centre."},
+      {id:10,name:"Treatment Works Building, Elliot Pumping Station and Filters",type:"historical",icon:"🏛️",walkMin:15,x:90.90,y:41.55,info:"Built 1930–1931 filtration plant."},
+      {id:11,name:"University Museum & Art Gallery",type:"museum",icon:"🖼️",walkMin:5,building:"Fung Ping Shan Building",location:"1-2/F",hours:"Tue–Sat 9:30am–6:00pm; Sun 1:00pm–6:00pm",x:17.36,y:70.22},
+      {id:12,name:"Stephen Hui Geological Museum",type:"museum",icon:"🖼️",walkMin:5,building:"James Lee Science Building",location:"G-1/F",hours:"Mon–Fri 1:00pm–6:00pm",x:47.54,y:37.88},
+      {id:13,name:"Jao Tsung-I Petite Ecole",type:"museum",icon:"🖼️",walkMin:3,building:"Tang Chi Ngong Building",hours:"Mon–Fri 10:00am–5:00pm",x:12.04,y:61.00},
+      {id:14,name:"Hong Kong Biodiversity Museum",type:"museum",icon:"🖼️",walkMin:5,building:"Kadoorie Biological Sciences Building",location:"2/F",hours:"Wed/Sat/Sun sessions",x:47.38,y:55.57},
+      {id:15,name:"Visitor Centre (Souvenir Shop)",type:"souvenir",icon:"🛍️",walkMin:13,hours:"Mon–Sat 9:30am–5:00pm; Sun 11:00am–5:00pm",x:83.70,y:68.93},
+      {id:16,name:"HKUP Bookshop",type:"souvenir",icon:"🛍️",walkMin:13,building:"Run Run Shaw Heritage House",location:"G/F",hours:"Mon–Fri 10:00am–5:00pm",x:80.57,y:67.75},
+      {id:17,name:"Red Brick Wall",type:"photo",icon:"📸",walkMin:10,x:88.67,y:62.53},
+      {id:18,name:"Main Building",type:"photo",icon:"📸",walkMin:5,x:37.65,y:74.02},
+      {id:19,name:"Lily Pond",type:"photo",icon:"📸",walkMin:5,x:30.21,y:44.61},
+      {id:20,name:"May Hall and Elliot Hall",type:"photo",icon:"📸",walkMin:13,x:6.11,y:31.36}
     ];
 
     const DATASETS = {
-      food: {
-        title: "HKU Main Campus Map (Food Map)",
-        listLabel: "Restaurant List",
-        note: "Walking time shown is from KKL Building.",
-        items: restaurants,
-        categories: [
-          {key:"canteen", label:"Canteen", icon:"🍱"},
-          {key:"cafe", label:"Cafe", icon:"☕"},
-          {key:"western", label:"Western", icon:"🥪"},
-          {key:"asian", label:"Asian", icon:"🍜"},
-          {key:"halal", label:"Halal", icon:"🕌"},
-          {key:"vegetarian", label:"Vegetarian", icon:"🥗"},
-          {key:"vending", label:"Vending", icon:"🥡"}
+      food:{
+        title:"HKU Main Campus Map (Food Map)",
+        listLabel:"Restaurant List",
+        note:"Walking time shown is from KKL Building.",
+        items:restaurants,
+        categories:[
+          {key:"canteen",label:"Canteen",icon:"🍱"},
+          {key:"cafe",label:"Cafe",icon:"☕"},
+          {key:"western",label:"Western",icon:"🥪"},
+          {key:"asian",label:"Asian",icon:"🍜"},
+          {key:"halal",label:"Halal",icon:"🕌"},
+          {key:"vegetarian",label:"Vegetarian",icon:"🥗"},
+          {key:"vending",label:"Vending",icon:"🥡"}
         ]
       },
-      visit: {
-        title: "HKU Main Campus Map (Visit Map)",
-        listLabel: "Visiting Points",
-        note: "Explore campus heritage, museums, shops, and photo spots.",
-        items: visitPoints,
-        categories: [
-          {key:"historical", label:"Historical Buildings", icon:"🏛️"},
-          {key:"museum", label:"Art Gallery / Museum", icon:"🖼️"},
-          {key:"souvenir", label:"Souvenir Shop / Book Shop", icon:"🛍️"},
-          {key:"photo", label:"Popular Photo Spot", icon:"📸"}
+      visit:{
+        title:"HKU Main Campus Map (Visit Map)",
+        listLabel:"Visiting Points",
+        note:"Explore heritage, museums, shops and photo spots.",
+        items:visitPoints,
+        categories:[
+          {key:"historical",label:"Historical Buildings",icon:"🏛️"},
+          {key:"museum",label:"Museum / Gallery",icon:"🖼️"},
+          {key:"souvenir",label:"Souvenir / Bookshop",icon:"🛍️"},
+          {key:"photo",label:"Photo Spot",icon:"📸"}
         ]
       }
     };
 
-    const HERE = { x:24.04, y:56.28, yOffset:-1.2 };
+    const HERE = {x:24.04, y:56.28};
 
     const ROUTES_TO_KKL = {
       hkuA2: {
         name: "HKU Station Exit A2",
         path: [
-          {x:54.07, y:52.07},
-          {x:54.31, y:50.44},
-          {x:52.25, y:49.72},
-          {x:53.10, y:43.55},
-          {x:48.15, y:43.00},
-          {x:47.06, y:51.53},
-          {x:44.65, y:53.53},
-          {x:38.37, y:54.61},
-          {x:38.37, y:59.33},
-          {x:32.93, y:57.88},
-          {x:27.13, y:57.15},
-          {x:24.11, y:57.52}
+          {x:54.07,y:52.07},{x:54.31,y:50.44},{x:52.25,y:49.72},{x:53.10,y:43.55},
+          {x:48.15,y:43.00},{x:47.06,y:51.53},{x:44.65,y:53.53},{x:38.37,y:54.61},
+          {x:38.37,y:59.33},{x:32.93,y:57.88},{x:27.13,y:57.15},{x:24.11,y:57.52}
         ],
-        milestones: [
-          { index: 6, message: "⬇️ Please go down the escalator here." }
-        ]
+        milestones:[{index:6,message:"⬇️ Please go down the escalator here."}]
       },
       sypC: {
         name: "Sai Ying Pun Station Exit C",
         path: [
-          {x:6.43, y:79.20},
-          {x:8.81, y:78.75},
-          {x:10.53, y:77.29},
-          {x:11.26, y:72.94},
-          {x:13.43, y:71.85},
-          {x:13.92, y:74.39},
-          {x:15.85, y:77.84},
-          {x:20.68, y:80.02},
-          {x:25.63, y:80.20},
-          {x:26.84, y:79.84},
-          {x:26.72, y:77.11},
-          {x:27.56, y:72.03},
-          {x:29.01, y:69.49},
-          {x:30.46, y:57.52},
-          {x:25.99, y:57.52}
+          {x:6.43,y:79.20},{x:8.81,y:78.75},{x:10.53,y:77.29},{x:11.26,y:72.94},
+          {x:13.43,y:71.85},{x:13.92,y:74.39},{x:15.85,y:77.84},{x:20.68,y:80.02},
+          {x:25.63,y:80.20},{x:26.84,y:79.84},{x:26.72,y:77.11},{x:27.56,y:72.03},
+          {x:29.01,y:69.49},{x:30.46,y:57.52},{x:25.99,y:57.52}
         ],
-        milestones: [
-          { index: 12, message: "🛗 Please take the elevator to 2/F here." }
-        ]
+        milestones:[{index:12,message:"🛗 Please take the elevator to 2/F here."}]
       }
     };
 
-    const mapSection = document.getElementById('mapSection');
+    // ---------------- ELEMENTS ----------------
     const mapStage = document.getElementById('mapStage');
     const mapWrap = document.getElementById('campusMapWrap');
+    const routeLayer = document.getElementById('routeLayer');
     const popup = document.getElementById('popup');
     const list = document.getElementById('restaurantList');
     const listCount = document.getElementById('listCount');
     const listLabel = document.getElementById('listLabel');
     const mapTitle = document.getElementById('mapTitle');
-    const mapTitleInline = document.getElementById('mapTitleInline');
     const mapNote = document.getElementById('mapNote');
     const mapNoteInline = document.getElementById('mapNoteInline');
     const filterBar = document.getElementById('filterBar');
     const legend = document.getElementById('legend');
+    const routeHint = document.getElementById('routeHint');
 
     const foodModeBtn = document.getElementById('foodModeBtn');
     const visitModeBtn = document.getElementById('visitModeBtn');
     const routeModeBtn = document.getElementById('routeModeBtn');
     const resetZoomBtn = document.getElementById('resetZoomBtn');
 
-    const routeLayer = document.getElementById('routeLayer');
-    const routeHint = document.getElementById('routeHint');
+    const listPanel = document.getElementById('listPanel');
+    const mapTabBtn = document.getElementById('mapTabBtn');
+    const listTabBtn = document.getElementById('listTabBtn');
+    const drawerHandle = document.getElementById('drawerHandle');
+
     const stationPrompt = document.getElementById('stationPrompt');
     const cancelStationPrompt = document.getElementById('cancelStationPrompt');
 
+    // ---------------- STATE ----------------
     const markerById = new Map();
     const listBtnById = new Map();
-
     let currentMode = 'food';
-    let hereMarkerEl = null;
+    let selectedTypes = null; // null = all
     let activeAnchorEl = null;
-    let currentScale = 1;
-    let currentOrigin = { x:50, y:50 };
-    const MIN_SCALE = 1;
-    const MAX_SCALE = 3;
 
-    // route state
-    let walkerEl = null;
+    let hereMarkerEl = null;
     let stationEl = null;
+    let walkerEl = null;
     let routeAnimId = null;
     let lastRouteStationKey = null;
 
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    // Transform state (native-like pan/zoom)
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
+    const MIN_SCALE = 1;
+    const MAX_SCALE_DESKTOP = 2.6;
+    const MAX_SCALE_MOBILE = 2.0;
 
-    function applyZoom(){
-      mapStage.style.transformOrigin = `${currentOrigin.x}% ${currentOrigin.y}%`;
-      mapStage.style.transform = `scale(${currentScale})`;
+    function isMobile(){ return window.matchMedia('(max-width:768px)').matches; }
+    function maxScale(){ return isMobile() ? MAX_SCALE_MOBILE : MAX_SCALE_DESKTOP; }
+    function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
+
+    function applyTransform(){
+      mapStage.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+      if (popup.style.display === 'block' && activeAnchorEl && !isMobile()){
+        positionPopup(activeAnchorEl);
+      }
     }
 
-    function zoomToPoint(xPercent, yPercent, scale=1.8){
-      currentOrigin.x = clamp(xPercent, 0, 100);
-      currentOrigin.y = clamp(yPercent, 0, 100);
-      currentScale = clamp(scale, MIN_SCALE, MAX_SCALE);
-      applyZoom();
+    function clampPan(){
+      const rect = mapWrap.getBoundingClientRect();
+      const w = rect.width, h = rect.height;
+      const minTx = w - w * scale;
+      const minTy = h - h * scale;
+      tx = clamp(tx, minTx, 0);
+      ty = clamp(ty, minTy, 0);
     }
 
-    function walkColorClass(min){
-      if (min <= 5) return 'walk-green';
-      if (min <= 10) return 'walk-orange';
-      return 'walk-red';
+    function resetView(){
+      scale = 1; tx = 0; ty = 0;
+      applyTransform();
     }
 
-    function walkTimeHTML(min){
-      return `<span class="walk-time ${walkColorClass(min)}">🚶 ${min} min</span>`;
+    function zoomAt(clientX, clientY, nextScale){
+      const rect = mapWrap.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const worldX = (x - tx) / scale;
+      const worldY = (y - ty) / scale;
+
+      scale = clamp(nextScale, MIN_SCALE, maxScale());
+      tx = x - worldX * scale;
+      ty = y - worldY * scale;
+      clampPan();
+      applyTransform();
     }
 
-    function getActiveData(){
-      return DATASETS[currentMode === 'visit' ? 'visit' : 'food'];
+    function zoomToPoint(xPct, yPct, targetScale){
+      const rect = mapWrap.getBoundingClientRect();
+      scale = clamp(targetScale, MIN_SCALE, maxScale());
+
+      const px = (xPct / 100) * rect.width;
+      const py = (yPct / 100) * rect.height;
+      const targetX = rect.width * 0.5;
+      const targetY = rect.height * 0.45;
+
+      tx = targetX - px * scale;
+      ty = targetY - py * scale;
+      clampPan();
+      applyTransform();
     }
 
-    function categoryLabel(type){
-      const data = getActiveData();
-      const c = data.categories.find(x => x.key === type);
+    function walkTimeHTML(min){ return `🚶 ${min} min`; }
+
+    function getActiveData(){ return currentMode === 'visit' ? DATASETS.visit : DATASETS.food; }
+
+    function catLabel(type){
+      const c = getActiveData().categories.find(x => x.key === type);
       return c ? c.label : type;
     }
 
     function clearActive(){
-      document.querySelectorAll('.marker.active').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.list button.active').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.marker.active').forEach(el=>el.classList.remove('active'));
+      document.querySelectorAll('.list button.active').forEach(el=>el.classList.remove('active'));
     }
 
-    function openPopupNearElement(anchorEl, html){
-      if (!anchorEl) return;
-      popup.innerHTML = html;
-      popup.style.display = 'block';
+    function popupHTML(p){
+      if (currentMode === 'food'){
+        return `
+          <h4>${p.icon} ${p.id}. ${p.name}</h4>
+          <div class="row"><b>Building:</b> ${p.building}</div>
+          <div class="row"><b>Location:</b> ${p.location}</div>
+          <div class="row"><b>Type:</b> ${catLabel(p.type)}</div>
+          <div class="row"><b>Food:</b> ${p.food}</div>
+          ${p.access ? `<div class="row"><b>Access:</b> ${p.access}</div>` : ''}
+          <div class="row"><b>Walk from KKL:</b> ${walkTimeHTML(p.walkMin)}</div>
+        `;
+      }
+      return `
+        <h4>${p.icon} ${p.id}. ${p.name}</h4>
+        <div class="row"><b>Category:</b> ${catLabel(p.type)}</div>
+        ${p.building ? `<div class="row"><b>Building:</b> ${p.building}</div>` : ''}
+        ${p.location ? `<div class="row"><b>Location:</b> ${p.location}</div>` : ''}
+        ${p.walkMin ? `<div class="row"><b>Walk from KKL:</b> ${walkTimeHTML(p.walkMin)}</div>` : ''}
+        ${p.hours ? `<div class="row"><b>Opening hours:</b> ${p.hours}</div>` : ''}
+        ${p.info ? `<div class="row">${p.info}</div>` : ''}
+      `;
+    }
 
+    function positionPopup(anchorEl){
       const wrapRect = mapWrap.getBoundingClientRect();
       const aRect = anchorEl.getBoundingClientRect();
 
-      const x = (aRect.left - wrapRect.left) + (aRect.width / 2);
-      const y = (aRect.top - wrapRect.top) + (aRect.height / 2);
+      const x = (aRect.left - wrapRect.left) + aRect.width / 2;
+      const y = (aRect.top - wrapRect.top) + aRect.height / 2;
 
-      const pad = 8;
-      const gap = 12;
-      const popupW = popup.offsetWidth;
-      const popupH = popup.offsetHeight;
+      const pad = 8, gap = 10;
+      const w = popup.offsetWidth, h = popup.offsetHeight;
 
       let left = x + gap;
-      let top = y - 10;
-
-      if (left + popupW > wrapRect.width - pad) left = x - popupW - gap;
+      let top = y - 8;
+      if (left + w > wrapRect.width - pad) left = x - w - gap;
       if (left < pad) left = pad;
-      if (left + popupW > wrapRect.width - pad) left = wrapRect.width - popupW - pad;
-
       if (top < pad) top = pad;
-      if (top + popupH > wrapRect.height - pad) top = wrapRect.height - popupH - pad;
+      if (top + h > wrapRect.height - pad) top = wrapRect.height - h - pad;
 
-      popup.style.left = `${left}px`;
-      popup.style.top = `${top}px`;
-      activeAnchorEl = anchorEl;
+      popup.style.left = left + 'px';
+      popup.style.top = top + 'px';
     }
 
-    function pointPopupHTML(p){
-      if (currentMode === 'food') {
-        return `
-          <h4>${p.id}. ${p.name}</h4>
-          <p><strong>Building:</strong> ${p.building}</p>
-          <p><strong>Location:</strong> ${p.location}</p>
-          <p><strong>Type:</strong> ${categoryLabel(p.type)}</p>
-          <p><strong>Food:</strong> ${p.food}</p>
-          ${p.access ? `<p><strong>Access:</strong> ${p.access}</p>` : ''}
-          <p><strong>Walk from KKL:</strong> ${walkTimeHTML(p.walkMin)}</p>
-        `;
-      }
+    function openPopup(anchorEl, html){
+      popup.innerHTML = html;
+      popup.style.display = 'block';
+      activeAnchorEl = anchorEl;
 
-      return `
-        <h4>${p.id}. ${p.name}</h4>
-        <p><strong>Category:</strong> ${categoryLabel(p.type)}</p>
-        ${p.building ? `<p><strong>Building:</strong> ${p.building}</p>` : ''}
-        ${p.location ? `<p><strong>Location:</strong> ${p.location}</p>` : ''}
-        ${p.walkMin ? `<p><strong>Walk from KKL:</strong> ${walkTimeHTML(p.walkMin)}</p>` : ''}
-        ${p.hours ? `<p><strong>Opening Hours:</strong> ${p.hours}</p>` : ''}
-        ${p.bookingUrl ? `<p><strong>Book:</strong> <a href="${p.bookingUrl}" target="_blank" rel="noopener noreferrer">Visit booking page</a></p>` : ''}
-        ${p.info ? `<p>${p.info}</p>` : ''}
-      `;
+      if (isMobile()){
+        popup.classList.add('mobile-sheet');
+      } else {
+        popup.classList.remove('mobile-sheet');
+        positionPopup(anchorEl);
+      }
     }
 
     function focusPoint(p){
       if (currentMode === 'route') return;
-
       clearActive();
-      const marker = markerById.get(p.id);
-      const listBtn = listBtnById.get(p.id);
-      if (marker) marker.classList.add('active');
-      if (listBtn) listBtn.classList.add('active');
 
-      mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
-      zoomToPoint(p.x, p.y, 1.8);
-      setTimeout(() => openPopupNearElement(marker, pointPopupHTML(p)), 180);
+      const marker = markerById.get(p.id);
+      const btn = listBtnById.get(p.id);
+      if (marker) marker.classList.add('active');
+      if (btn) btn.classList.add('active');
+
+      zoomToPoint(p.x, p.y, isMobile() ? 1.22 : 1.45);
+      setTimeout(() => openPopup(marker, popupHTML(p)), 120);
+
+      if (isMobile()) setMobileTab('map');
     }
 
     function removePoiMarkers(){
@@ -828,196 +646,148 @@
     }
 
     function createMarker(p){
-      const btn = document.createElement('button');
-      btn.className = `marker poi`;
-      btn.style.left = p.x + '%';
-      btn.style.top = p.y + '%';
-      btn.innerHTML = p.icon;
-      btn.dataset.type = p.type;
-      btn.dataset.id = p.id;
-      btn.title = p.name;
-      btn.setAttribute('aria-label', p.name);
-
-      btn.addEventListener('click', (e) => {
+      const m = document.createElement('button');
+      m.className = 'marker poi';
+      m.style.left = p.x + '%';
+      m.style.top = p.y + '%';
+      m.innerHTML = p.icon;
+      m.title = p.name;
+      m.dataset.type = p.type;
+      m.addEventListener('click', e => {
         e.stopPropagation();
         focusPoint(p);
       });
-
-      markerById.set(p.id, btn);
-      mapStage.appendChild(btn);
+      mapStage.appendChild(m);
+      markerById.set(p.id, m);
     }
 
     function createHereMarker(){
       if (hereMarkerEl) return;
-
-      const here = document.createElement('button');
-      here.className = 'marker here';
-      here.style.left = `${HERE.x}%`;
-      here.style.top = `${HERE.y + HERE.yOffset}%`;
-      here.innerHTML = '📍';
-      here.title = "I'm here (KKL Building)";
-      here.setAttribute('aria-label', "I'm here (KKL Building)");
-
-      here.addEventListener('click', (e) => {
+      const h = document.createElement('button');
+      h.className = 'marker here';
+      h.style.left = HERE.x + '%';
+      h.style.top = HERE.y + '%';
+      h.innerHTML = '📍';
+      h.title = "I'm here (KKL)";
+      h.addEventListener('click', e => {
         e.stopPropagation();
-        clearActive();
-
-        if (currentMode !== 'route') {
-          mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
-          zoomToPoint(HERE.x, HERE.y, 2.0);
-
-          setTimeout(() => {
-            openPopupNearElement(here, `
-              <h4>📍 You are at KKL Building</h4>
-              <p>Use the map or list to explore nearby points.</p>
-            `);
-          }, 180);
-        }
+        zoomToPoint(HERE.x, HERE.y, isMobile()?1.22:1.42);
+        openPopup(h, `<h4>📍 KKL Building</h4><div class="row">You are here.</div>`);
       });
-
-      hereMarkerEl = here;
-      mapStage.appendChild(here);
+      mapStage.appendChild(h);
+      hereMarkerEl = h;
     }
 
-    function createList(){
+    function renderList(){
+      const data = getActiveData();
       list.innerHTML = '';
       listBtnById.clear();
-      const data = getActiveData();
 
       data.items.forEach(p => {
         const li = document.createElement('li');
-        const btn = document.createElement('button');
-        btn.dataset.type = p.type;
-        btn.dataset.id = p.id;
-
-        if (currentMode === 'food') {
-          btn.innerHTML = `
-            <div class="name">${p.icon} ${p.id}. ${p.name}</div>
-            <div class="meta">${p.location}, ${p.building}</div>
-            <div class="meta">${p.food}</div>
-            ${p.access ? `<div class="meta"><strong>Access:</strong> ${p.access}</div>` : ''}
-            <div class="meta">${walkTimeHTML(p.walkMin)} walk from KKL</div>
-          `;
-        } else {
-          btn.innerHTML = `
-            <div class="name">${p.icon} ${p.id}. ${p.name}</div>
-            <div class="meta">${categoryLabel(p.type)}</div>
-            ${p.building ? `<div class="meta">${p.location ? `${p.location}, ` : ''}${p.building}</div>` : ''}
-            ${p.walkMin ? `<div class="meta">${walkTimeHTML(p.walkMin)} walk from KKL</div>` : ''}
-            ${p.hours ? `<div class="meta">${p.hours}</div>` : ''}
-            ${p.bookingUrl ? `<div class="meta"><a href="${p.bookingUrl}" target="_blank" rel="noopener noreferrer">Booking link</a></div>` : ''}
-            ${p.info ? `<div class="meta">${p.info}</div>` : ''}
-          `;
-        }
-
-        btn.addEventListener('click', () => focusPoint(p));
-        li.appendChild(btn);
+        const b = document.createElement('button');
+        b.innerHTML = `
+          <div class="i1">${p.icon} ${p.id}. ${p.name}</div>
+          <div class="i2">${catLabel(p.type)} ${p.building ? `• ${p.location ? p.location + ', ' : ''}${p.building}` : ''}</div>
+          <div class="i3">${p.walkMin ? walkTimeHTML(p.walkMin)+' from KKL' : ''}</div>
+        `;
+        b.addEventListener('click', () => focusPoint(p));
+        li.appendChild(b);
         list.appendChild(li);
-        listBtnById.set(p.id, btn);
+        listBtnById.set(p.id, b);
       });
     }
 
     function renderFilterBar(){
       const data = getActiveData();
       filterBar.innerHTML = '';
+      if (currentMode === 'route') return;
 
-      const all = document.createElement('label');
-      all.className = 'chip';
-      all.innerHTML = `<input type="checkbox" value="all" checked> All`;
-      filterBar.appendChild(all);
+      const allChip = document.createElement('button');
+      allChip.className = 'chip active';
+      allChip.textContent = 'All';
+      allChip.dataset.type = 'all';
+      filterBar.appendChild(allChip);
 
-      data.categories.forEach(cat => {
-        const label = document.createElement('label');
-        label.className = 'chip';
-        label.innerHTML = `<input type="checkbox" value="${cat.key}" checked> ${cat.icon} ${cat.label}`;
-        filterBar.appendChild(label);
+      data.categories.forEach(c => {
+        const chip = document.createElement('button');
+        chip.className = 'chip';
+        chip.textContent = `${c.icon} ${c.label}`;
+        chip.dataset.type = c.key;
+        filterBar.appendChild(chip);
       });
 
-      const checks = filterBar.querySelectorAll('input[type="checkbox"]');
-      const allBox = filterBar.querySelector('input[value="all"]');
-
-      checks.forEach(c => {
-        c.addEventListener('change', (e) => {
-          if (e.target.value === 'all') {
-            checks.forEach(x => x.checked = e.target.checked);
+      filterBar.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const t = chip.dataset.type;
+          if (t === 'all'){
+            selectedTypes = null;
           } else {
-            const nonAll = [...checks].filter(x => x.value !== 'all');
-            allBox.checked = nonAll.every(x => x.checked);
+            if (!selectedTypes) selectedTypes = new Set();
+            if (selectedTypes.has(t)) selectedTypes.delete(t); else selectedTypes.add(t);
+            if (selectedTypes.size === 0) selectedTypes = null;
           }
+          paintFilterState();
           applyFilter();
         });
       });
+      paintFilterState();
+    }
+
+    function paintFilterState(){
+      filterBar.querySelectorAll('.chip').forEach(ch => ch.classList.remove('active'));
+      const all = filterBar.querySelector('[data-type="all"]');
+      if (!selectedTypes || selectedTypes.size === 0){
+        all && all.classList.add('active');
+      } else {
+        selectedTypes.forEach(t => {
+          const el = filterBar.querySelector(`[data-type="${t}"]`);
+          if (el) el.classList.add('active');
+        });
+      }
     }
 
     function renderLegend(){
       const data = getActiveData();
       legend.innerHTML = '';
+      if (currentMode === 'route') return;
 
-      data.categories.forEach(cat => {
-        const chip = document.createElement('span');
-        chip.className = 'chip';
-        chip.innerHTML = `${cat.icon} ${cat.label}`;
-        legend.appendChild(chip);
+      data.categories.forEach(c => {
+        const s = document.createElement('span');
+        s.className = 'chip';
+        s.textContent = `${c.icon} ${c.label}`;
+        legend.appendChild(s);
       });
-
-      if (currentMode === 'food') {
-        const extra = document.createElement('span');
-        extra.className = 'chip';
-        extra.innerHTML = `🍽️ Staff/Members only`;
-        legend.appendChild(extra);
-      }
-
       const here = document.createElement('span');
       here.className = 'chip';
-      here.innerHTML = `📍 I’m here (KKL)`;
+      here.textContent = '📍 I’m here (KKL)';
       legend.appendChild(here);
-    }
-
-    function selectedTypes(){
-      const checks = filterBar.querySelectorAll('input[type="checkbox"]');
-      const allBox = filterBar.querySelector('input[value="all"]');
-      const allChecked = allBox ? allBox.checked : true;
-      const chosen = [...checks]
-        .filter(c => c.checked && c.value !== 'all')
-        .map(c => c.value);
-      return { allChecked, chosen };
     }
 
     function applyFilter(){
       if (currentMode === 'route') return;
-
       const data = getActiveData();
-      const { allChecked, chosen } = selectedTypes();
-      let visibleCount = 0;
+      let count = 0;
 
       data.items.forEach(p => {
-        const show = allChecked || chosen.includes(p.type);
+        const show = !selectedTypes || selectedTypes.has(p.type);
         const marker = markerById.get(p.id);
-        const liBtn = listBtnById.get(p.id);
+        const btn = listBtnById.get(p.id);
 
         if (marker) marker.style.display = show ? 'flex' : 'none';
-        if (liBtn) liBtn.closest('li').style.display = show ? 'block' : 'none';
-        if (show) visibleCount++;
+        if (btn) btn.closest('li').style.display = show ? '' : 'none';
+        if (show) count++;
       });
 
-      listCount.textContent = visibleCount;
+      listCount.textContent = count;
       popup.style.display = 'none';
       activeAnchorEl = null;
       clearActive();
     }
 
-    // ---------------------------
-    // ROUTE MODE HELPERS
-    // ---------------------------
-    function showRouteHint(msg){
-      routeHint.textContent = msg;
-      routeHint.style.display = 'block';
-    }
-
-    function hideRouteHint(){
-      routeHint.style.display = 'none';
-      routeHint.textContent = '';
-    }
+    // ---------------- ROUTE ----------------
+    function showRouteHint(msg){ routeHint.style.display='block'; routeHint.textContent=msg; }
+    function hideRouteHint(){ routeHint.style.display='none'; routeHint.textContent=''; }
 
     function clearRoute(){
       routeLayer.innerHTML = '';
@@ -1028,117 +798,116 @@
     }
 
     function pathMetrics(path){
-      const cum = [0];
-      for (let i = 1; i < path.length; i++){
-        const dx = path[i].x - path[i - 1].x;
-        const dy = path[i].y - path[i - 1].y;
-        cum[i] = cum[i - 1] + Math.hypot(dx, dy);
+      const cum=[0];
+      for(let i=1;i<path.length;i++){
+        const dx=path[i].x-path[i-1].x, dy=path[i].y-path[i-1].y;
+        cum[i]=cum[i-1]+Math.hypot(dx,dy);
       }
-      return { cum, total: cum[cum.length - 1] };
+      return {cum,total:cum[cum.length-1]};
     }
+      function pointAt(path,cum,d){
+      if (d<=0) return path[0];
+      const total = cum[cum.length-1];
+      if (d>=total) return path[path.length-1];
 
-    function pointAtDistance(path, cum, d){
-      if (d <= 0) return path[0];
-      const total = cum[cum.length - 1];
-      if (d >= total) return path[path.length - 1];
-
-      let i = 1;
-      while (i < cum.length && cum[i] < d) i++;
-
-      const d0 = cum[i - 1], d1 = cum[i];
-      const t = (d - d0) / (d1 - d0);
+      let i=1;
+      while(i<cum.length && cum[i]<d) i++;
+      const d0=cum[i-1], d1=cum[i];
+      const t=(d-d0)/(d1-d0);
 
       return {
-        x: path[i - 1].x + (path[i].x - path[i - 1].x) * t,
-        y: path[i - 1].y + (path[i].y - path[i - 1].y) * t
+        x: path[i-1].x + (path[i].x-path[i-1].x)*t,
+        y: path[i-1].y + (path[i].y-path[i-1].y)*t
       };
     }
 
     function drawRouteToKKL(stationKey){
       const route = ROUTES_TO_KKL[stationKey];
       if (!route) return;
-
       lastRouteStationKey = stationKey;
 
       clearRoute();
-      clearActive();
       popup.style.display = 'none';
       activeAnchorEl = null;
+      clearActive();
 
+      // draw polyline route in SVG (0..100 coordinate space)
       const ns = "http://www.w3.org/2000/svg";
-
       const poly = document.createElementNS(ns, "polyline");
-      poly.setAttribute("class", "route-line");
       poly.setAttribute("points", route.path.map(p => `${p.x},${p.y}`).join(" "));
+      poly.setAttribute("fill", "none");
+      poly.setAttribute("stroke", "#2563eb");
+      poly.setAttribute("stroke-width", "1.15");
+      poly.setAttribute("stroke-linecap", "round");
+      poly.setAttribute("stroke-linejoin", "round");
       routeLayer.appendChild(poly);
 
       const start = route.path[0];
       const end = route.path[route.path.length - 1];
 
-      const sDot = document.createElementNS(ns, "circle");
-      sDot.setAttribute("class", "route-start-dot");
-      sDot.setAttribute("cx", start.x);
-      sDot.setAttribute("cy", start.y);
-      sDot.setAttribute("r", "1.1");
-      routeLayer.appendChild(sDot);
+      const startDot = document.createElementNS(ns, "circle");
+      startDot.setAttribute("cx", start.x);
+      startDot.setAttribute("cy", start.y);
+      startDot.setAttribute("r", "1.1");
+      startDot.setAttribute("fill", "#0ea5e9");
+      routeLayer.appendChild(startDot);
 
-      const eDot = document.createElementNS(ns, "circle");
-      eDot.setAttribute("class", "route-end-dot");
-      eDot.setAttribute("cx", end.x);
-      eDot.setAttribute("cy", end.y);
-      eDot.setAttribute("r", "1.2");
-      routeLayer.appendChild(eDot);
+      const endDot = document.createElementNS(ns, "circle");
+      endDot.setAttribute("cx", end.x);
+      endDot.setAttribute("cy", end.y);
+      endDot.setAttribute("r", "1.25");
+      endDot.setAttribute("fill", "#dc2626");
+      routeLayer.appendChild(endDot);
 
-      // Keep emoji button on map, clickable to replay route
+      // station marker
       stationEl = document.createElement('button');
       stationEl.className = 'marker poi';
       stationEl.style.left = `${start.x}%`;
       stationEl.style.top = `${start.y}%`;
-      stationEl.innerHTML = '🚉';
       stationEl.style.zIndex = '28';
-      stationEl.style.pointerEvents = 'auto';
-      stationEl.title = `${route.name} (click to replay route)`;
+      stationEl.innerHTML = '🚉';
+      stationEl.title = `${route.name} (tap to replay)`;
       stationEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (lastRouteStationKey) drawRouteToKKL(lastRouteStationKey);
+        drawRouteToKKL(stationKey);
       });
       mapStage.appendChild(stationEl);
 
+      // walker marker
       walkerEl = document.createElement('button');
       walkerEl.className = 'marker walker';
       walkerEl.style.left = `${start.x}%`;
       walkerEl.style.top = `${start.y}%`;
+      walkerEl.style.zIndex = '29';
       walkerEl.textContent = '🚶';
-      walkerEl.title = 'Click to replay route';
-      walkerEl.setAttribute('aria-label', 'Replay route');
+      walkerEl.title = 'Replay route';
       walkerEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (lastRouteStationKey) drawRouteToKKL(lastRouteStationKey);
+        drawRouteToKKL(stationKey);
       });
       mapStage.appendChild(walkerEl);
 
-      // IMPORTANT: no auto zoom in route mode (removed zoomToRoute call)
       showRouteHint(`From ${route.name}: follow the blue line to KKL 📍`);
 
-      const { cum, total } = pathMetrics(route.path);
-      const milestoneDistance = (route.milestones || []).map(m => ({
+      const {cum,total} = pathMetrics(route.path);
+      const milestones = (route.milestones || []).map(m => ({
         d: cum[m.index],
-        message: m.message,
-        shown: false
+        shown: false,
+        message: m.message
       }));
 
-      const duration = 12000;
-      const startTime = performance.now();
+      const duration = 11000;
+      const t0 = performance.now();
 
       function frame(now){
-        const t = Math.min((now - startTime) / duration, 1);
+        const t = Math.min((now - t0) / duration, 1);
         const d = total * t;
-        const pt = pointAtDistance(route.path, cum, d);
+        const pt = pointAt(route.path, cum, d);
 
         walkerEl.style.left = `${pt.x}%`;
         walkerEl.style.top = `${pt.y}%`;
 
-        milestoneDistance.forEach(m => {
+        milestones.forEach(m => {
           if (!m.shown && d >= m.d){
             m.shown = true;
             showRouteHint(m.message);
@@ -1148,37 +917,30 @@
         if (t < 1){
           routeAnimId = requestAnimationFrame(frame);
         } else {
-          showRouteHint("✅ You have arrived at KKL Building.");
           routeAnimId = null;
+          showRouteHint('✅ You have arrived at KKL Building.');
         }
       }
-
       routeAnimId = requestAnimationFrame(frame);
     }
 
-    // ---------------------------
-    // MODE SWITCH
-    // ---------------------------
+    // ---------------- MODE ----------------
     function switchMode(mode){
       currentMode = mode;
+      selectedTypes = null;
       clearRoute();
-
-      foodModeBtn.classList.toggle('active', mode === 'food');
-      visitModeBtn.classList.toggle('active', mode === 'visit');
-      routeModeBtn.classList.toggle('active', mode === 'route');
-
-      mapSection.classList.toggle('route-mode', mode === 'route');
-      resetZoomBtn.style.display = (mode === 'route') ? 'none' : 'inline-flex';
-
       popup.style.display = 'none';
       activeAnchorEl = null;
       clearActive();
 
+      foodModeBtn.classList.toggle('active', mode==='food');
+      visitModeBtn.classList.toggle('active', mode==='visit');
+      routeModeBtn.classList.toggle('active', mode==='route');
+
       if (mode === 'route'){
-        mapTitle.textContent = "HKU Main Campus Map (Route to KKL)";
-        mapTitleInline.textContent = "HKU Main Campus Map";
-        mapNote.textContent = "Select your MTR station exit to view walking route.";
-        mapNoteInline.textContent = "Select your MTR station exit to view walking route.";
+        mapTitle.textContent = 'HKU Main Campus Map (Route to KKL)';
+        mapNote.textContent = 'Select your MTR station exit to view walking route.';
+        mapNoteInline.textContent = mapNote.textContent;
 
         removePoiMarkers();
         list.innerHTML = '';
@@ -1186,125 +948,155 @@
         filterBar.innerHTML = '';
         legend.innerHTML = '';
 
-        currentScale = 1;
-        currentOrigin = { x:50, y:50 };
-        applyZoom();
-
+        resetView();
         stationPrompt.classList.add('show');
+        if (isMobile()) setMobileTab('map');
         return;
       }
 
       stationPrompt.classList.remove('show');
 
       const data = getActiveData();
-      listLabel.textContent = data.listLabel;
       mapTitle.textContent = data.title;
-      mapTitleInline.textContent = "HKU Main Campus Map";
       mapNote.textContent = data.note;
       mapNoteInline.textContent = data.note;
+      listLabel.textContent = data.listLabel;
 
       removePoiMarkers();
       data.items.forEach(createMarker);
-
-      createList();
+      renderList();
       renderFilterBar();
       renderLegend();
       applyFilter();
-
-      currentScale = 1;
-      currentOrigin = { x:50, y:50 };
-      applyZoom();
+      resetView();
     }
 
-    // ---------------------------
-    // EVENTS
-    // ---------------------------
-    foodModeBtn.addEventListener('click', () => switchMode('food'));
-    visitModeBtn.addEventListener('click', () => switchMode('visit'));
-    routeModeBtn.addEventListener('click', () => switchMode('route'));
+    // ---------------- MOBILE MAP/LIST TABS ----------------
+    function setMobileTab(tab){
+      if (!isMobile()) return;
+      const showList = tab === 'list';
+      listPanel.classList.toggle('open', showList);
+      mapTabBtn.classList.toggle('active', !showList);
+      listTabBtn.classList.toggle('active', showList);
+    }
 
-    cancelStationPrompt.addEventListener('click', () => {
-      stationPrompt.classList.remove('show');
+    mapTabBtn?.addEventListener('click', ()=> setMobileTab('map'));
+    listTabBtn?.addEventListener('click', ()=> setMobileTab('list'));
+
+    // optional: tap drawer handle toggles
+    drawerHandle?.addEventListener('click', ()=>{
+      if (!isMobile()) return;
+      listPanel.classList.toggle('open');
+      const open = listPanel.classList.contains('open');
+      mapTabBtn.classList.toggle('active', !open);
+      listTabBtn.classList.toggle('active', open);
     });
 
-    stationPrompt.querySelectorAll('[data-station]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.dataset.station;
+    // ---------------- EVENTS ----------------
+    foodModeBtn.addEventListener('click', ()=>switchMode('food'));
+    visitModeBtn.addEventListener('click', ()=>switchMode('visit'));
+    routeModeBtn.addEventListener('click', ()=>switchMode('route'));
+
+    cancelStationPrompt.addEventListener('click', ()=> stationPrompt.classList.remove('show'));
+    stationPrompt.querySelectorAll('[data-station]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
         stationPrompt.classList.remove('show');
-        drawRouteToKKL(key);
+        drawRouteToKKL(btn.dataset.station);
       });
     });
 
-    resetZoomBtn.addEventListener('click', () => {
-      currentScale = 1;
-      currentOrigin = { x:50, y:50 };
-      applyZoom();
+    resetZoomBtn.addEventListener('click', ()=>{
+      resetView();
       popup.style.display = 'none';
       activeAnchorEl = null;
       clearActive();
-      clearRoute();
     });
 
-    // Disable zoom in route mode
-    mapWrap.addEventListener('wheel', (e) => {
-      if (currentMode === 'route') return;
-
-      e.preventDefault();
-
-      const rect = mapStage.getBoundingClientRect();
-      const xPct = clamp(((e.clientX - rect.left) / rect.width) * 100, 0, 100);
-      const yPct = clamp(((e.clientY - rect.top) / rect.height) * 100, 0, 100);
-
-      const step = 0.18;
-      const direction = e.deltaY < 0 ? 1 : -1;
-      const nextScale = clamp(currentScale + direction * step, MIN_SCALE, MAX_SCALE);
-
-      currentOrigin = { x:xPct, y:yPct };
-      currentScale = nextScale;
-      applyZoom();
-
-      if (popup.style.display === 'block' && activeAnchorEl) {
-        requestAnimationFrame(() => openPopupNearElement(activeAnchorEl, popup.innerHTML));
-      }
-    }, { passive:false });
-
-    mapWrap.addEventListener('click', (e) => {
-      if (e.target.classList.contains('marker')) return;
+    // close popup when tapping blank map
+    mapWrap.addEventListener('click', (e)=>{
+      if (e.target.closest('.marker')) return;
       if (popup.contains(e.target)) return;
       popup.style.display = 'none';
       activeAnchorEl = null;
       clearActive();
     });
 
-    document.addEventListener('scroll', () => {
-      popup.style.display = 'none';
-      activeAnchorEl = null;
+    // wheel zoom (desktop)
+    mapWrap.addEventListener('wheel', (e)=>{
+      if (currentMode === 'route') return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.14 : -0.14;
+      zoomAt(e.clientX, e.clientY, scale + delta);
+    }, {passive:false});
+
+    // pointer pan + touch pinch
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+    let pinchStartDist = 0;
+    let pinchStartScale = 1;
+    let pinchCenter = null;
+
+    function touchDist(t1,t2){
+      const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY;
+      return Math.hypot(dx,dy);
+    }
+    function touchCenter(t1,t2){
+      return {x:(t1.clientX+t2.clientX)/2, y:(t1.clientY+t2.clientY)/2};
+    }
+
+    mapWrap.addEventListener('pointerdown', (e)=>{
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      dragging = true;
+      lastX = e.clientX; lastY = e.clientY;
+      mapWrap.setPointerCapture(e.pointerId);
     });
 
-    mapStage.addEventListener('transitionend', () => {
-      if (popup.style.display === 'block' && activeAnchorEl) {
-        openPopupNearElement(activeAnchorEl, popup.innerHTML);
+    mapWrap.addEventListener('pointermove', (e)=>{
+      if (!dragging) return;
+      if (scale <= 1) return;
+      tx += (e.clientX - lastX);
+      ty += (e.clientY - lastY);
+      lastX = e.clientX; lastY = e.clientY;
+      clampPan();
+      applyTransform();
+    });
+
+    mapWrap.addEventListener('pointerup', ()=> dragging=false);
+    mapWrap.addEventListener('pointercancel', ()=> dragging=false);
+
+    mapWrap.addEventListener('touchstart', (e)=>{
+      if (e.touches.length === 2){
+        pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+        pinchStartScale = scale;
+        pinchCenter = touchCenter(e.touches[0], e.touches[1]);
+      }
+    }, {passive:true});
+
+    mapWrap.addEventListener('touchmove', (e)=>{
+      if (e.touches.length === 2){
+        e.preventDefault();
+        const d = touchDist(e.touches[0], e.touches[1]);
+        const ratio = d / pinchStartDist;
+        zoomAt(pinchCenter.x, pinchCenter.y, pinchStartScale * ratio);
+      }
+    }, {passive:false});
+
+    window.addEventListener('resize', ()=>{
+      clampPan();
+      applyTransform();
+      if (!isMobile()){
+        listPanel.classList.remove('open');
+      }
+      if (popup.style.display === 'block' && activeAnchorEl && !isMobile()){
+        positionPopup(activeAnchorEl);
       }
     });
 
-    window.addEventListener('resize', () => {
-      if (popup.style.display === 'block' && activeAnchorEl) {
-        openPopupNearElement(activeAnchorEl, popup.innerHTML);
-      }
-    });
-
-    // helper: click map to get coordinate
-    document.getElementById('campusMap').addEventListener('click', function(e){
-      const rect = this.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(2);
-      const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(2);
-      console.log(`x:${x}, y:${y}`);
-    });
-
-    // init
+    // ---------------- INIT ----------------
     createHereMarker();
     switchMode('food');
-    applyZoom();
+    applyTransform();
+    if (isMobile()) setMobileTab('map');
   </script>
 </body>
 </html>
