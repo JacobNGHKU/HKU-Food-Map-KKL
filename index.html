@@ -600,8 +600,8 @@
     let popupExpanded = false;
 
     let hereMarkerEl = null;
-    let stationEl = null;
     let walkerEl = null;
+    let routeStartMarkerByKey = new Map();
     let routeAnimId = null;
     let lastRouteStationKey = null;
     let routeFsExitTimer = null;
@@ -939,10 +939,38 @@
     function showRouteHint(msg){ routeHint.style.display='block'; routeHint.textContent=msg; }
     function hideRouteHint(){ routeHint.style.display='none'; routeHint.textContent=''; }
 
+    function clearRouteStartMarkers(){
+      routeStartMarkerByKey.forEach(el => el.remove());
+      routeStartMarkerByKey.clear();
+    }
+
+    function createRouteStartMarkers(){
+      clearRouteStartMarkers();
+
+      Object.entries(ROUTES_TO_KKL).forEach(([stationKey, route]) => {
+        const start = route.path[0];
+        const m = document.createElement('button');
+        m.className = 'marker poi';
+        m.style.left = `${start.x}%`;
+        m.style.top = `${start.y}%`;
+        m.style.zIndex = '28';
+        m.innerHTML = '🚉';
+        m.title = `${route.name} (tap for route)`;
+
+        m.addEventListener('pointerdown', e => e.stopPropagation());
+        m.addEventListener('click', (e) => {
+          e.stopPropagation();
+          drawRouteToKKL(stationKey);
+        });
+
+        mapStage.appendChild(m);
+        routeStartMarkerByKey.set(stationKey, m);
+      });
+    }
+
     function clearRoute(){
       routeLayer.innerHTML = '';
       if (walkerEl) { walkerEl.remove(); walkerEl = null; }
-      if (stationEl) { stationEl.remove(); stationEl = null; }
       if (routeAnimId) { cancelAnimationFrame(routeAnimId); routeAnimId = null; }
       hideRouteHint();
     }
@@ -993,6 +1021,10 @@
       popupExpanded = false;
       clearActive();
 
+      // highlight selected station icon among always-visible station markers
+      routeStartMarkerByKey.forEach(el => el.classList.remove('active'));
+      routeStartMarkerByKey.get(stationKey)?.classList.add('active');
+
       const ns = "http://www.w3.org/2000/svg";
       const poly = document.createElementNS(ns, "polyline");
       poly.setAttribute("points", route.path.map(p => `${p.x},${p.y}`).join(" "));
@@ -1019,20 +1051,6 @@
       endDot.setAttribute("r", "1.25");
       endDot.setAttribute("fill", "#dc2626");
       routeLayer.appendChild(endDot);
-
-      stationEl = document.createElement('button');
-      stationEl.className = 'marker poi';
-      stationEl.style.left = `${start.x}%`;
-      stationEl.style.top = `${start.y}%`;
-      stationEl.style.zIndex = '28';
-      stationEl.innerHTML = '🚉';
-      stationEl.title = `${route.name} (tap to replay)`;
-      stationEl.addEventListener('pointerdown', e => e.stopPropagation());
-      stationEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        drawRouteToKKL(stationKey);
-      });
-      mapStage.appendChild(stationEl);
 
       walkerEl = document.createElement('button');
       walkerEl.className = 'marker walker';
@@ -1139,21 +1157,26 @@
 
       if (mode === 'route'){
         mapTitle.textContent = 'HKU Main Campus Map (Route to KKL)';
-        mapNote.textContent = 'Select your MTR station exit to view walking route.';
+        mapNote.textContent = 'Tap a station icon to view walking route.';
         mapNoteInline.textContent = mapNote.textContent;
 
         removePoiMarkers();
+        createRouteStartMarkers(); // keep both stations visible
         list.innerHTML = '';
         listCount.textContent = '0';
         filterBar.innerHTML = '';
 
         resetView();
-        stationPrompt.classList.add('show');
+        stationPrompt.classList.remove('show');
+        showRouteHint('Tap a station icon 🚉 to view route to KKL 📍');
+
         if (isMobile()) setMobileTab('map');
         updateMobileRouteUI();
         return;
       }
 
+      // leaving route mode
+      clearRouteStartMarkers();
       stationPrompt.classList.remove('show');
 
       const data = getActiveData();
@@ -1216,7 +1239,6 @@
         activeAnchorEl = null;
         currentPopupPoint = null;
         popupExpanded = false;
-        // keep current marker/list highlight
         return;
       }
 
@@ -1271,12 +1293,8 @@
 
     mapWrap.addEventListener('pointerdown', (e)=>{
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-
-      // Don't start dragging if user clicked marker/popup
       if (e.target.closest('.marker')) return;
       if (popup.contains(e.target)) return;
-
-      // Optional: only pan when zoomed
       if (scale <= 1) return;
 
       dragging = true;
