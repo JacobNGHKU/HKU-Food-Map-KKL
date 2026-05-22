@@ -6,15 +6,13 @@
   <title>HKU Campus Map</title>
   <style>
     :root{
-      --bg:#f7f8fb;
+      --bg:#f6f8fc;
       --card:#ffffff;
+      --line:#e5e7eb;
       --text:#0f172a;
       --muted:#64748b;
-      --line:#e2e8f0;
       --blue:#2563eb;
-      --blue2:#1d4ed8;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -22,13 +20,11 @@
       color:var(--text);
       background:var(--bg);
     }
-
-    .app{
-      max-width:1200px;
+    .container{
+      max-width:1080px;
       margin:0 auto;
-      padding:12px;
+      padding:14px;
     }
-
     .topbar{
       display:flex;
       flex-wrap:wrap;
@@ -36,405 +32,364 @@
       align-items:center;
       margin-bottom:10px;
     }
-
-    .btn{
+    .mode-btn, .ghost-btn, .chip, .station-btn{
       border:1px solid var(--line);
       background:#fff;
-      color:var(--text);
-      border-radius:10px;
-      padding:10px 12px;
+      color:#0f172a;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:14px;
       cursor:pointer;
+    }
+    .mode-btn.active{
+      border-color:#bfdbfe;
+      background:#eff6ff;
+      color:#1d4ed8;
       font-weight:600;
-      min-height:40px;
     }
-    .btn:hover{border-color:#cbd5e1}
-    .btn.active{
-      background:var(--blue);
-      color:#fff;
-      border-color:var(--blue);
-    }
+    .ghost-btn{ margin-left:auto; }
 
-    .layout{
-      display:grid;
-      grid-template-columns: 1.3fr .7fr;
-      gap:12px;
-      align-items:start;
-    }
-
-    .panel{
+    .title-card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:12px;
-      padding:10px;
+      padding:12px;
+      margin-bottom:10px;
     }
+    #mapTitle{ margin:0 0 4px; font-size:18px; }
+    #mapNote{ margin:0; color:var(--muted); font-size:13px; }
 
-    #mapTitle{
-      margin:6px 4px 4px;
-      font-size:18px;
-    }
-    #mapNote{
-      margin:0 4px 10px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    #mapNoteInline{
-      margin:0 0 8px;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    #filterBar{
+    #filterBar, #legend{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      margin-bottom:8px;
+      margin:10px 0;
     }
-
     .chip{
-      border:1px solid var(--line);
-      background:#fff;
-      padding:7px 10px;
-      border-radius:999px;
       font-size:13px;
-      cursor:pointer;
-      user-select:none;
+      padding:7px 10px;
     }
     .chip.active{
-      background:#eff6ff;
       border-color:#bfdbfe;
-      color:#1e40af;
+      background:#eff6ff;
+      color:#1d4ed8;
       font-weight:600;
     }
 
-    .map-wrap{
+    .mobile-tabs{
+      display:none;
+      gap:8px;
+      margin:8px 0 10px;
+      position:relative;
+      z-index:40;
+    }
+    .tab-btn{
+      flex:1;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fff;
+      padding:9px 12px;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .tab-btn.active{
+      border-color:#bfdbfe;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:600;
+    }
+
+    #campusMapWrap{
       position:relative;
       width:100%;
-      aspect-ratio:16/9;
+      aspect-ratio:16/10;
+      border-radius:14px;
       overflow:hidden;
-      border-radius:12px;
-      border:1px solid var(--line);
       background:#fff;
+      border:1px solid var(--line);
       touch-action:none;
     }
-
-    .map-stage{
-      position:relative;
-      width:100%;
-      height:100%;
-      transform-origin:50% 50%;
+    #mapStage{
+      position:absolute;
+      inset:0;
+      transform-origin:0 0;
       will-change:transform;
     }
-
-    #campusMap{
+    #mapImage{
       position:absolute;
       inset:0;
       width:100%;
       height:100%;
-      object-fit:fill; /* IMPORTANT for coordinate alignment */
+      object-fit:cover;
       user-select:none;
       -webkit-user-drag:none;
       pointer-events:none;
     }
-
-    .route-layer{
+    #routeLayer{
       position:absolute;
       inset:0;
       width:100%;
       height:100%;
-      z-index:20;
       pointer-events:none;
     }
 
     .marker{
       position:absolute;
-      transform:translate(-50%,-50%);
-      width:30px;
-      height:30px;
+      transform:translate(-50%,-100%);
+      width:30px; height:30px;
       border-radius:999px;
-      border:1px solid rgba(15,23,42,.12);
+      border:1px solid #dbeafe;
       background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      box-shadow:0 2px 8px rgba(0,0,0,.15);
-      z-index:25;
+      display:flex; align-items:center; justify-content:center;
       font-size:16px;
-      padding:0;
+      cursor:pointer;
+      box-shadow:0 4px 12px rgba(2,6,23,.14);
+      z-index:20;
     }
     .marker.active{
-      outline:2px solid #93c5fd;
-      transform:translate(-50%,-50%) scale(1.1);
+      outline:2px solid #60a5fa;
+      outline-offset:2px;
     }
-    .marker.here{ background:#fee2e2; }
-    .marker.walker{ background:#dcfce7; }
+    .marker.here{ background:#eff6ff; border-color:#93c5fd; }
+    .marker.walker{ background:#ecfeff; border-color:#7dd3fc; }
 
-    .popup{
+    #popup{
       position:absolute;
-      z-index:300;
-      min-width:220px;
-      max-width:300px;
+      display:none;
+      min-width:230px;
+      max-width:290px;
       background:#fff;
       border:1px solid var(--line);
       border-radius:12px;
-      padding:10px 12px;
-      box-shadow:0 8px 30px rgba(0,0,0,.18);
-      display:none;
-    }
-    .popup h4{
-      margin:0 0 6px;
-      font-size:14px;
-    }
-    .popup .row{
+      box-shadow:0 10px 24px rgba(2,6,23,.18);
+      padding:10px;
+      z-index:60;
       font-size:13px;
-      margin:3px 0;
-      color:#0f172a;
     }
+    #popup h4{ margin:0 0 6px; font-size:14px; }
+    #popup .row{ margin:3px 0; color:#334155; }
 
     #routeHint{
-      margin-top:8px;
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:10px;
       display:none;
-      padding:8px 10px;
-      background:#eff6ff;
-      border:1px solid #bfdbfe;
-      color:#1d4ed8;
+      z-index:65;
+      background:rgba(15,23,42,.92);
+      color:#fff;
       border-radius:10px;
+      padding:9px 11px;
       font-size:13px;
-      font-weight:600;
     }
 
-    #legend{
+    #mapNoteInline{
+      margin:10px 2px 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    #listPanel{
       margin-top:10px;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:12px;
+      overflow:hidden;
     }
-    #legend .chip{
-      cursor:default;
-      background:#fafafa;
+    #drawerHandle{
+      display:none;
+      padding:10px;
+      border-bottom:1px solid var(--line);
+      text-align:center;
+      font-size:13px;
+      color:#64748b;
+      background:#f8fafc;
+      cursor:pointer;
     }
-
-    .list-panel h3{
-      margin:4px 0 8px;
-      font-size:16px;
+    .list-head{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      font-weight:600;
+      font-size:14px;
     }
-
     .list{
       list-style:none;
       margin:0;
       padding:0;
-      max-height:70vh;
+      max-height:280px;
       overflow:auto;
     }
-
-    .list li{
-      border-bottom:1px solid #f1f5f9;
-    }
-
+    .list li{ border-bottom:1px solid #f1f5f9; }
     .list button{
       width:100%;
       text-align:left;
       border:0;
       background:#fff;
+      padding:10px 12px;
       cursor:pointer;
-      padding:10px 8px;
-      border-radius:8px;
     }
     .list button:hover{ background:#f8fafc; }
     .list button.active{ background:#eff6ff; }
-    .list .i1{ font-weight:700; font-size:14px; }
-    .list .i2{ color:var(--muted); font-size:12px; margin-top:2px; }
-    .list .i3{ color:#1d4ed8; font-size:12px; margin-top:2px; }
+    .i1{ font-size:14px; font-weight:600; color:#0f172a; }
+    .i2,.i3{ font-size:12px; color:#64748b; margin-top:2px; }
 
-    .mobile-tabs{ display:none; }
-
-    .drawer-handle{
-      display:none;
-      text-align:center;
-      padding:8px 0 4px;
-      color:#94a3b8;
-      font-size:12px;
-      cursor:pointer;
-      user-select:none;
-    }
-    .drawer-handle:before{
-      content:"";
-      display:block;
-      width:44px;
-      height:5px;
-      border-radius:999px;
-      background:#cbd5e1;
-      margin:0 auto 6px;
-    }
-
-    .station-prompt{
+    /* station prompt */
+    #stationPrompt{
       position:fixed;
       inset:0;
-      background:rgba(15,23,42,.38);
+      background:rgba(2,6,23,.45);
       display:none;
+      z-index:900;
       align-items:flex-end;
       justify-content:center;
-      z-index:700;
-      padding:12px;
+      padding:14px;
     }
-    .station-prompt.show{display:flex}
-    .station-card{
+    #stationPrompt.show{ display:flex; }
+    .prompt-card{
       width:min(560px,100%);
       background:#fff;
       border-radius:14px;
       border:1px solid var(--line);
-      box-shadow:0 10px 30px rgba(0,0,0,.2);
-      padding:12px;
+      padding:14px;
     }
-    .station-card h4{margin:4px 0 10px}
-    .station-actions{
-      display:grid;
-      gap:8px;
+    .prompt-title{ margin:0 0 10px; font-weight:700; }
+    .prompt-actions{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin-bottom:10px;
+    }
+    #cancelStationPrompt{
+      width:100%;
+      border-radius:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      background:#fff;
+      cursor:pointer;
     }
 
-    @media (max-width: 768px){
-      .app{ padding:8px; }
-      .layout{ display:block; }
+    /* mobile */
+    @media (max-width:768px){
+      .container{ padding:10px; }
+      .ghost-btn{ margin-left:0; }
+      .mobile-tabs{ display:flex; }
 
-      .map-wrap{
-        aspect-ratio:auto;
-        height:68vh;
-        min-height:460px;
+      /* hide non-clickable legend chips on mobile */
+      #legend{ display:none; }
+
+      #campusMapWrap{ aspect-ratio: 4/3; }
+
+      #popup.mobile-sheet{
+        position:fixed;
+        left:12px !important;
+        right:12px !important;
+        bottom:12px !important;
+        top:auto !important;
+        max-width:none;
+        z-index:680;
       }
 
-      .mobile-tabs{
-        display:flex;
-        gap:8px;
-        margin:8px 0;
-      }
-      .mobile-tabs .btn{
-        flex:1;
-        min-height:44px;
-      }
-
-      .list-panel{
+      /* Bottom drawer style */
+      #listPanel{
         position:fixed;
         left:0; right:0; bottom:0;
-        z-index:250;
-        border-radius:16px 16px 0 0;
-        box-shadow:0 -6px 20px rgba(0,0,0,.16);
-        max-height:58vh;
-        transform:translateY(calc(100% - 56px));
-        transition:transform .25s ease;
+        z-index:120;
+        margin:0;
+        border-radius:14px 14px 0 0;
+        transform:translateY(calc(100% - 44px));
+        transition:.25s ease;
+        max-height:70dvh;
       }
-      .list-panel.open{ transform:translateY(0); }
+      #listPanel.open{ transform:translateY(0); }
+      #drawerHandle{ display:block; }
+      .list{ max-height:calc(70dvh - 92px); }
 
-      .list{
-        max-height:calc(58vh - 100px);
-      }
-
-      .drawer-handle{ display:block; }
-
-      .popup{
-        font-size:13px;
-        line-height:1.35;
-      }
-      .popup.mobile-sheet{
-        position:fixed !important;
-        left:10px !important;
-        right:10px !important;
-        bottom:10px !important;
-        top:auto !important;
-        width:auto !important;
-        max-width:none !important;
-        max-height:34vh;
-        overflow:auto;
-        border-radius:12px;
-        padding:10px 12px;
-      }
-
-      /* hide non-clickable legend symbols on mobile */
-      #legend{ display:none; }
-    }
-
-    /* Mobile + Route mode fullscreen */
-    @media (max-width:768px){
-      body.route-mobile #campusMapWrap{
-        position:fixed;
-        inset:0;
-        width:100vw;
-        height:100dvh;
-        max-height:none;
-        border-radius:0;
-        z-index:500;
-        background:#fff;
-      }
-      body.route-mobile .map-wrap{
-        height:100dvh !important;
-        min-height:100dvh !important;
-        aspect-ratio:auto !important;
-        border-radius:0 !important;
-      }
-
-      body.route-mobile .mobile-tabs,
-      body.route-mobile #listPanel{
-        display:none !important;
-      }
-
+      /* route mode mobile UI */
+      body.route-mobile #listPanel{ display:none !important; }
       body.route-mobile #filterBar,
       body.route-mobile #legend,
       body.route-mobile #mapNoteInline{
         display:none !important;
       }
+
+      /* fullscreen map when route is playing */
+      body.route-mobile-fs .topbar,
+      body.route-mobile-fs .title-card,
+      body.route-mobile-fs .mobile-tabs{
+        display:none !important;
+      }
+      body.route-mobile-fs #campusMapWrap{
+        position:fixed;
+        inset:0;
+        width:100vw;
+        height:100dvh;
+        aspect-ratio:auto;
+        max-height:none;
+        border-radius:0;
+        border:0;
+        z-index:500;
+        background:#fff;
+      }
+      body.route-mobile-fs #routeHint{
+        display:block !important;
+        position:fixed;
+        left:12px;
+        right:12px;
+        bottom:calc(12px + env(safe-area-inset-bottom));
+        z-index:700;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="container">
     <div class="topbar">
-      <button id="foodModeBtn" class="btn active">🍱 Food Map</button>
-      <button id="visitModeBtn" class="btn">🏛️ Visit Map</button>
-      <button id="routeModeBtn" class="btn">🚶 To KKL</button>
-      <button id="resetZoomBtn" class="btn">Reset zoom</button>
+      <button id="foodModeBtn" class="mode-btn active">🍱 Food Map</button>
+      <button id="visitModeBtn" class="mode-btn">🏛️ Visit Map</button>
+      <button id="routeModeBtn" class="mode-btn">🚶 To KKL</button>
+      <button id="resetZoomBtn" class="ghost-btn">Reset zoom</button>
     </div>
 
-    <div class="layout">
-      <section class="panel">
-        <h2 id="mapTitle">HKU Main Campus Map (Food Map)</h2>
-        <p id="mapNote">Walking time shown is from KKL Building.</p>
+    <section class="title-card">
+      <h2 id="mapTitle">HKU Main Campus Map (Food Map)</h2>
+      <p id="mapNote">Walking time shown is from KKL Building.</p>
+    </section>
 
-        <div id="filterBar"></div>
-        <p id="mapNoteInline">Walking time shown is from KKL Building.</p>
+    <div id="filterBar"></div>
+    <div id="legend"></div>
 
-        <div id="campusMapWrap" class="map-wrap">
-          <div id="mapStage" class="map-stage">
-            <!-- Replace src with your real map file -->
-            <img id="campusMap" src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU Main Campus Map" />
-            <svg id="routeLayer" class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-          </div>
-          <div id="popup" class="popup"></div>
-        </div>
-
-        <div id="routeHint"></div>
-        <div id="legend"></div>
-
-        <div class="mobile-tabs">
-          <button id="mapTabBtn" class="btn active">🗺️ Map</button>
-          <button id="listTabBtn" class="btn">📋 List</button>
-        </div>
-      </section>
-
-      <aside id="listPanel" class="panel list-panel">
-        <div id="drawerHandle" class="drawer-handle">Swipe / tap to open list</div>
-        <h3><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
-        <ul id="restaurantList" class="list"></ul>
-      </aside>
+    <!-- Map/List tabs ABOVE map (mobile) -->
+    <div class="mobile-tabs">
+      <button id="mapTabBtn" class="tab-btn active">🗺️ Map</button>
+      <button id="listTabBtn" class="tab-btn">📋 List</button>
     </div>
+
+    <div id="campusMapWrap" class="map-wrap">
+      <div id="mapStage">
+        <!-- Replace src with your real map image path -->
+        <img id="mapImage" src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU Main Campus Map" />
+        <svg id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="popup"></div>
+      </div>
+      <div id="routeHint"></div>
+    </div>
+
+    <p id="mapNoteInline">Walking time shown is from KKL Building.</p>
+
+    <section id="listPanel">
+      <div id="drawerHandle">Swipe / tap to open list</div>
+      <div class="list-head"><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</div>
+      <ul id="restaurantList" class="list"></ul>
+    </section>
   </div>
 
-  <div id="stationPrompt" class="station-prompt">
-    <div class="station-card">
-      <h4>Where are you coming from?</h4>
-      <div class="station-actions">
-        <button class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
-        <button class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
-        <button id="cancelStationPrompt" class="btn">Cancel</button>
+  <!-- Station selector prompt -->
+  <div id="stationPrompt">
+    <div class="prompt-card">
+      <p class="prompt-title">Where are you coming from?</p>
+      <div class="prompt-actions">
+        <button class="station-btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
+        <button class="station-btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
       </div>
+      <button id="cancelStationPrompt">Cancel</button>
     </div>
   </div>
 
@@ -579,6 +534,7 @@
     let walkerEl = null;
     let routeAnimId = null;
     let lastRouteStationKey = null;
+    let routeFsExitTimer = null;
 
     // Pan/zoom state
     let scale = 1;
@@ -899,7 +855,7 @@
     function pointAt(path,cum,d){
       if (d<=0) return path[0];
       const total = cum[cum.length-1];
-      if (d>=total) return path[path.length-1];
+      if (d >= total) return path[path.length - 1];
 
       let i=1;
       while(i<cum.length && cum[i]<d) i++;
@@ -907,8 +863,8 @@
       const t=(d-d0)/(d1-d0);
 
       return {
-          x: path[i-1].x + (path[i].x - path[i-1].x) * t,
-          y: path[i-1].y + (path[i].y - path[i-1].y) * t
+        x: path[i-1].x + (path[i].x - path[i-1].x) * t,
+        y: path[i-1].y + (path[i].y - path[i-1].y) * t
       };
     }
 
@@ -918,6 +874,15 @@
       lastRouteStationKey = stationKey;
 
       clearRoute();
+
+      if (routeFsExitTimer){
+        clearTimeout(routeFsExitTimer);
+        routeFsExitTimer = null;
+      }
+      if (isMobile() && currentMode === 'route'){
+        setRouteFullscreen(true);
+      }
+
       popup.style.display = 'none';
       activeAnchorEl = null;
       clearActive();
@@ -1019,17 +984,35 @@
         } else {
           routeAnimId = null;
           showRouteHint('✅ You have arrived at KKL Building.');
+
+          if (isMobile() && currentMode === 'route'){
+            if (routeFsExitTimer) clearTimeout(routeFsExitTimer);
+            routeFsExitTimer = setTimeout(() => {
+              setRouteFullscreen(false); // exit fullscreen after 3 sec
+            }, 3000);
+          }
         }
       }
       routeAnimId = requestAnimationFrame(frame);
     }
 
     // ---------------- MOBILE ROUTE FULLSCREEN ----------------
-    function updateMobileRouteUI(){
-      const on = isMobile() && currentMode === 'route';
-      document.body.classList.toggle('route-mobile', on);
+    function setRouteFullscreen(on){
+      if (!isMobile()) return;
+      document.body.classList.toggle('route-mobile-fs', on);
+    }
 
-      if (on){
+    function updateMobileRouteUI(){
+      const inRouteMobile = isMobile() && currentMode === 'route';
+      document.body.classList.toggle('route-mobile', inRouteMobile);
+
+      if (!inRouteMobile){
+        setRouteFullscreen(false);
+        if (routeFsExitTimer){
+          clearTimeout(routeFsExitTimer);
+          routeFsExitTimer = null;
+        }
+      } else {
         listPanel?.classList.remove('open');
         setMobileTab('map');
       }
@@ -1099,7 +1082,7 @@
 
     drawerHandle?.addEventListener('click', ()=>{
       if (!isMobile()) return;
-      if (currentMode === 'route') return; // hidden anyway in route mode
+      if (currentMode === 'route') return;
       listPanel.classList.toggle('open');
       const open = listPanel.classList.contains('open');
       mapTabBtn.classList.toggle('active', !open);
@@ -1210,6 +1193,11 @@
     });
 
     // ---------------- INIT ----------------
+    const mobileTabs = document.querySelector('.mobile-tabs');
+    if (isMobile() && mobileTabs && mapWrap && mapWrap.parentNode) {
+      mapWrap.parentNode.insertBefore(mobileTabs, mapWrap); // move tabs above map
+    }
+
     createHereMarker();
     switchMode('food');
     applyTransform();
@@ -1218,3 +1206,4 @@
   </script>
 </body>
 </html>
+    
