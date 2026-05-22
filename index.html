@@ -13,6 +13,7 @@
       --muted:#5f6f8f;
       --brand:#1f4ea3;
       --chip:#eef3ff;
+      --drawer-peek: 92px;
     }
 
     *{ box-sizing:border-box; }
@@ -50,6 +51,12 @@
       gap:8px;
       flex-wrap:wrap;
       margin-top:12px;
+    }
+
+    .mobile-tabs{
+      display:none;
+      margin-top:10px;
+      gap:8px;
     }
 
     .btn{
@@ -92,6 +99,10 @@
       padding:12px;
     }
 
+    .list-panel{
+      position:relative;
+      z-index:20;
+    }
     .list-panel h3{
       margin:0 0 4px;
       font-size:18px;
@@ -100,6 +111,22 @@
       color:var(--muted);
       margin:0 0 10px;
       font-size:13px;
+    }
+
+    .drawer-handle{
+      display:none;
+      width:100%;
+      padding:4px 0 8px;
+      cursor:grab;
+      touch-action:none;
+    }
+    .drawer-handle span{
+      display:block;
+      width:44px;
+      height:5px;
+      border-radius:99px;
+      margin:0 auto;
+      background:#c9d4ea;
     }
 
     #filterBar{
@@ -166,15 +193,17 @@
       border-radius:12px;
       overflow:hidden;
       background:#fff;
+      touch-action:none;
     }
 
     #mapStage{
       position:relative;
       width:100%;
       height:100%;
-      transform-origin:50% 50%;
-      transform:scale(1);
+      transform-origin:0 0;
+      transform:translate(0px,0px) scale(1);
       transition:transform .18s ease;
+      will-change:transform;
     }
 
     #campusMap{
@@ -186,6 +215,27 @@
       -webkit-user-drag:none;
       pointer-events:auto;
       background:#f0f4ff;
+    }
+
+    .zoom-controls{
+      position:absolute;
+      right:10px;
+      top:10px;
+      z-index:90;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .zoom-controls .btn{
+      width:40px;
+      height:40px;
+      padding:0;
+      border-radius:10px;
+      font-size:20px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
     .route-layer{
@@ -279,18 +329,16 @@
     .walk-orange{ color:#8a5300; background:#fff4e5; border-color:#f7d7a6; }
     .walk-red{ color:#8f1d1d; background:#ffeaea; border-color:#f5baba; }
 
-    /* Route-only layout */
     #mapSection.route-mode .layout{ grid-template-columns:1fr; }
     #mapSection.route-mode .list-panel,
     #mapSection.route-mode #filterBar,
     #mapSection.route-mode #legend{ display:none; }
 
-    /* Bottom ROUTE MESSAGE */
     .route-hint{
       position:absolute;
       left:50%;
-      bottom:14px;                 /* distance from bottom of map */
-      transform:translateX(-50%);  /* only center horizontally */
+      bottom:14px;
+      transform:translateX(-50%);
       z-index:80;
       background:#ffffff;
       border:2px solid #1f4ea3;
@@ -331,7 +379,105 @@
       margin-top:8px;
     }
 
+    .popup.mobile-sheet{
+      position:fixed !important;
+      left:12px !important;
+      right:12px !important;
+      bottom:12px !important;
+      top:auto !important;
+      width:auto !important;
+      max-width:none !important;
+      max-height:45vh;
+      overflow:auto;
+      border-radius:14px;
+      z-index:320;
+    }
+
     a{ color:#1f4ea3; }
+
+    @media (max-width: 768px){
+      .container{
+        width:100vw;
+        margin:0;
+        padding:8px;
+      }
+
+      .header,.panel{
+        border-radius:12px;
+        padding:10px;
+      }
+
+      .layout{
+        display:block;
+      }
+
+      .map-panel{ margin-bottom:10px; }
+
+      .map-wrap{
+        aspect-ratio: 3 / 4;
+      }
+
+      .toolbar{
+        align-items:stretch;
+      }
+      .toolbar .btn{
+        width:100%;
+        min-height:44px;
+      }
+
+      .btn,.list button,.chip{
+        min-height:44px;
+        font-size:15px;
+      }
+
+      #filterBar{
+        flex-wrap:nowrap;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:4px;
+      }
+      #filterBar .chip{
+        white-space:nowrap;
+        flex:0 0 auto;
+      }
+
+      .mobile-tabs{
+        display:flex;
+      }
+      .mobile-tabs .btn{
+        flex:1;
+      }
+
+      #mapSection:not(.route-mode) .list-panel{
+        position:fixed;
+        left:8px;
+        right:8px;
+        bottom:8px;
+        height:min(74vh, 620px);
+        z-index:250;
+        box-shadow:0 14px 30px rgba(0,0,0,.25);
+        border-radius:14px 14px 12px 12px;
+        touch-action:none;
+      }
+
+      #mapSection:not(.route-mode) .list{
+        max-height:calc(74vh - 170px);
+      }
+
+      .drawer-handle{
+        display:block;
+      }
+
+      .route-hint{
+        font-size:14px;
+        padding:10px 12px;
+        width:min(94%, 560px);
+      }
+
+      #mapSection.route-mode .mobile-tabs{
+        display:none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -350,11 +496,17 @@
         <p id="mapNote" style="margin:0;color:var(--muted);font-size:13px;">Walking time shown is from KKL Building.</p>
         <button class="btn" id="resetZoomBtn">Reset zoom</button>
       </div>
+
+      <div class="mobile-tabs" id="mobileTabs">
+        <button class="btn active" id="mobileMapTabBtn">🗺️ Map</button>
+        <button class="btn" id="mobileListTabBtn">📋 List</button>
+      </div>
     </section>
 
     <section id="mapSection">
       <div class="layout">
-        <aside class="panel list-panel">
+        <aside class="panel list-panel" id="listPanel">
+          <div class="drawer-handle" id="drawerHandle" aria-label="Drag to open list"><span></span></div>
           <h3><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
           <p class="small">Select a point from the list or map.</p>
           <div id="filterBar"></div>
@@ -366,12 +518,14 @@
           <p class="map-note" id="mapNoteInline">Walking time shown is from KKL Building.</p>
 
           <div class="map-wrap" id="campusMapWrap">
+            <div class="zoom-controls" id="zoomControls">
+              <button class="btn" id="zoomInBtn" aria-label="Zoom in">＋</button>
+              <button class="btn" id="zoomOutBtn" aria-label="Zoom out">－</button>
+            </div>
+
             <div id="mapStage">
-              <!-- replace src with your campus map image path -->
               <img id="campusMap" src="./Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU Main Campus Map">
-
               <svg id="routeLayer" class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-
               <div id="popup" class="popup"></div>
               <div id="routeHint" class="route-hint"></div>
             </div>
@@ -383,7 +537,6 @@
     </section>
   </div>
 
-  <!-- Route station prompt -->
   <div id="stationPrompt" class="prompt-backdrop" role="dialog" aria-modal="true" aria-labelledby="stationPromptTitle">
     <div class="prompt-card">
       <h3 id="stationPromptTitle" style="margin:0 0 10px;">Where are you coming from?</h3>
@@ -396,9 +549,6 @@
   </div>
 
   <script>
-    // ---------------------------
-    // FOOD DATA
-    // ---------------------------
     const restaurants = [
       {id:1,  name:"Chong Yuet Ming Amenities Centre Restaurant & HK Daily", building:"Chong Yuet Ming Cultural Centre", location:"4/F", type:"canteen", icon:"🍱", food:"Local fast food and Chaa Chaan Teng", walkMin:3, x:16.60, y:34.70},
       {id:2,  name:"Café 330", building:"Chong Yuet Ming Amenities Centre", location:"2/F", type:"cafe", icon:"☕", food:"Hot meal, salads, sandwiches and coffee", walkMin:3, x:17.75, y:34.85},
@@ -421,9 +571,6 @@
       {id:19, name:"Senior Common Room (SCR Club Members Only)", building:"KKL Building", location:"14-15/F", type:"western", icon:"🍽️", food:"Western food and Chinese food", walkMin:1, x:24.04, y:53.71, access:"SCR Club Members Only"}
     ];
 
-    // ---------------------------
-    // VISIT DATA
-    // ---------------------------
     const visitPoints = [
       {id:1, name:"Main Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:3, x:37.76, y:69.13, info:"The oldest structure on HKU Main Campus. Construction began in 1910 and completed in 1912. Exterior declared a monument in 1984."},
       {id:2, name:"Hung Hing Ying Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:37.16, y:80.56, info:"Opened in 1919, originally designed as the Union Building. Exterior declared a monument in 1995."},
@@ -479,7 +626,6 @@
 
     const HERE = { x:24.04, y:56.28, yOffset:-1.2 };
 
-    // Route data
     const ROUTES_TO_KKL = {
       hkuA2: {
         name: "HKU Station Exit A2",
@@ -490,7 +636,7 @@
           {x:53.10, y:43.55},
           {x:48.15, y:43.00},
           {x:47.06, y:51.53},
-          {x:44.65, y:53.53}, // escalator
+          {x:44.65, y:53.53},
           {x:38.37, y:54.61},
           {x:38.37, y:59.33},
           {x:32.93, y:57.88},
@@ -516,7 +662,7 @@
           {x:26.84, y:79.84},
           {x:26.72, y:77.11},
           {x:27.56, y:72.03},
-          {x:29.01, y:69.49}, // elevator
+          {x:29.01, y:69.49},
           {x:30.46, y:57.52},
           {x:25.99, y:57.52}
         ],
@@ -526,7 +672,6 @@
       }
     };
 
-    // DOM refs
     const mapSection = document.getElementById('mapSection');
     const mapStage = document.getElementById('mapStage');
     const mapWrap = document.getElementById('campusMapWrap');
