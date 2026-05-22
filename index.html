@@ -398,7 +398,6 @@
         max-height: 100dvh;
         margin: 0 auto;
       }
-      }
     }
   </style>
 </head>
@@ -804,10 +803,15 @@
       m.innerHTML = p.icon;
       m.title = p.name;
       m.dataset.type = p.type;
+
+      // Prevent map drag from starting when clicking marker
+      m.addEventListener('pointerdown', e => e.stopPropagation());
+
       m.addEventListener('click', e => {
         e.stopPropagation();
         focusPoint(p);
       });
+
       mapStage.appendChild(m);
       markerById.set(p.id, m);
     }
@@ -821,6 +825,10 @@
       h.style.zIndex = '60';
       h.innerHTML = '📍';
       h.title = "I'm here (KKL)";
+
+      // Prevent map drag from starting when clicking marker
+      h.addEventListener('pointerdown', e => e.stopPropagation());
+
       h.addEventListener('click', e => {
         e.stopPropagation();
         clearActive();
@@ -1019,6 +1027,7 @@
       stationEl.style.zIndex = '28';
       stationEl.innerHTML = '🚉';
       stationEl.title = `${route.name} (tap to replay)`;
+      stationEl.addEventListener('pointerdown', e => e.stopPropagation());
       stationEl.addEventListener('click', (e) => {
         e.stopPropagation();
         drawRouteToKKL(stationKey);
@@ -1032,6 +1041,7 @@
       walkerEl.style.zIndex = '29';
       walkerEl.textContent = '🚶';
       walkerEl.title = 'Replay route';
+      walkerEl.addEventListener('pointerdown', e => e.stopPropagation());
       walkerEl.addEventListener('click', (e) => {
         e.stopPropagation();
         drawRouteToKKL(stationKey);
@@ -1261,6 +1271,14 @@
 
     mapWrap.addEventListener('pointerdown', (e)=>{
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+      // Don't start dragging if user clicked marker/popup
+      if (e.target.closest('.marker')) return;
+      if (popup.contains(e.target)) return;
+
+      // Optional: only pan when zoomed
+      if (scale <= 1) return;
+
       dragging = true;
       lastX = e.clientX; lastY = e.clientY;
       mapWrap.setPointerCapture(e.pointerId);
@@ -1268,7 +1286,6 @@
 
     mapWrap.addEventListener('pointermove', (e)=>{
       if (!dragging) return;
-      if (scale <= 1) return;
       tx += (e.clientX - lastX);
       ty += (e.clientY - lastY);
       lastX = e.clientX; lastY = e.clientY;
