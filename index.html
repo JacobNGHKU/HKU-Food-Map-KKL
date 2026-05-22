@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,135 +6,142 @@
   <title>HKU Campus Map</title>
   <style>
     :root{
-      --bg:#f6f8fb;
+      --bg:#f6f8fc;
       --card:#ffffff;
-      --ink:#0f172a;
+      --line:#e5e7eb;
+      --text:#0f172a;
       --muted:#64748b;
-      --line:#e2e8f0;
       --blue:#2563eb;
+      --blue2:#1d4ed8;
+      --chip:#f1f5f9;
+      --map-ratio: 1.6;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:var(--bg);
-      color:var(--ink);
+      color:var(--text);
     }
-
     .app{
       max-width:1200px;
       margin:0 auto;
       padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
     .topbar{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
       display:flex;
-      gap:8px;
       flex-wrap:wrap;
+      gap:8px;
       align-items:center;
-      margin-bottom:10px;
     }
     .btn{
       border:1px solid var(--line);
       background:#fff;
+      color:var(--text);
       border-radius:10px;
-      padding:8px 12px;
+      padding:8px 10px;
+      font-size:14px;
       cursor:pointer;
-      font-weight:600;
     }
+    .btn:hover{border-color:#cbd5e1}
     .btn.active{
-      border-color:#bfdbfe;
-      background:#eff6ff;
-      color:#1d4ed8;
+      background:var(--blue);
+      color:#fff;
+      border-color:var(--blue2);
     }
 
-    .meta{
+    .titlecard{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:12px;
       padding:10px 12px;
-      margin-bottom:10px;
     }
-    .meta h2{
-      margin:0 0 4px;
-      font-size:18px;
-    }
-    .meta p{
-      margin:0;
-      color:var(--muted);
-      font-size:14px;
-    }
+    #mapTitle{margin:0 0 3px 0; font-size:18px}
+    #mapNote{margin:0; color:var(--muted); font-size:13px}
 
-    .filterbar,.legend{
+    #filterBar{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
       margin-top:10px;
     }
     .chip{
-      border:1px solid var(--line);
+      border:1px solid #dbe2ea;
+      background:var(--chip);
+      color:#0f172a;
       border-radius:999px;
-      background:#fff;
       padding:6px 10px;
-      font-size:13px;
+      font-size:12px;
       cursor:pointer;
     }
     .chip.active{
-      background:#eff6ff;
-      border-color:#bfdbfe;
+      background:#dbeafe;
+      border-color:#93c5fd;
       color:#1d4ed8;
-    }
-
-    .layout{
-      display:grid;
-      grid-template-columns:1fr 340px;
-      gap:12px;
-      align-items:start;
-    }
-
-    .map-card{
-      position:relative;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:12px;
-      overflow:hidden;
     }
 
     .mobile-tabs{
       display:none;
-      gap:8px;
-      padding:10px 10px 0;
-      background:#fff;
+      background:var(--card);
       border:1px solid var(--line);
       border-radius:12px;
-      margin-bottom:8px;
+      padding:8px;
+      gap:8px;
+    }
+    .mobile-tabs .btn{flex:1}
+
+    .content{
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:10px;
+      min-height:560px;
+    }
+
+    .map-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .map-note-inline{
+      color:var(--muted);
+      font-size:12px;
+      margin:0;
     }
 
     #campusMapWrap{
-      --map-ratio:1.45;
       position:relative;
       width:100%;
-      aspect-ratio:var(--map-ratio);
+      aspect-ratio: var(--map-ratio);
+      border-radius:10px;
       overflow:hidden;
+      background:#e2e8f0;
       touch-action:none;
-      background:#eef2ff;
-      border-top:1px solid var(--line);
     }
-
     #mapStage{
       position:absolute;
       inset:0;
-      transform-origin:top left;
+      transform-origin:0 0;
       will-change:transform;
     }
-
     #mapImage{
-      position:absolute;
-      inset:0;
       width:100%;
       height:100%;
       object-fit:contain;
+      display:block;
       user-select:none;
       -webkit-user-drag:none;
       pointer-events:none;
@@ -145,209 +152,248 @@
       inset:0;
       width:100%;
       height:100%;
-      pointer-events:none;
+      pointer-events:none; /* so markers stay clickable */
       overflow:visible;
+      z-index:20;
     }
 
     .marker{
       position:absolute;
-      transform:translate(-50%,-50%);
+      transform:translate(-50%, -50%);
       width:30px;
       height:30px;
-      border:1px solid rgba(15,23,42,.12);
+      border:none;
       border-radius:999px;
-      background:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:16px;
+      background:#fff;
+      box-shadow:0 2px 8px rgba(15,23,42,.2);
       cursor:pointer;
-      box-shadow:0 2px 8px rgba(2,6,23,.15);
+      font-size:16px;
       z-index:25;
     }
-    .marker.active{
-      outline:2px solid #60a5fa;
-      transform:translate(-50%,-50%) scale(1.08);
-    }
-    .marker.walker{
-      background:#dcfce7;
-      border-color:#86efac;
-    }
-
-    /* FIX 1: Always keep "I'm here" on top */
+    .marker.poi{background:#fff}
+    .marker.walker{background:#fef3c7}
     .marker.here{
+      background:#fee2e2;
       z-index:60 !important;
-      background:#fef9c3;
-      border-color:#fde68a;
+      pointer-events:auto;
+    }
+    .marker.active{
+      outline:2px solid #2563eb;
+      transform:translate(-50%, -50%) scale(1.08);
     }
 
     #popup{
       position:absolute;
       display:none;
+      min-width:220px;
+      max-width:300px;
       background:#fff;
-      border:1px solid var(--line);
-      border-radius:12px;
-      box-shadow:0 10px 24px rgba(2,6,23,.2);
-      padding:10px 12px;
-      max-width:min(92vw,360px);
+      border:1px solid #dbe2ea;
+      border-radius:10px;
+      box-shadow:0 10px 28px rgba(0,0,0,.15);
+      padding:10px;
       z-index:70;
-    }
-    #popup h4{
-      margin:0 0 4px;
-      font-size:14px;
+      font-size:13px;
       line-height:1.35;
     }
-    #popup .row{
-      margin-top:4px;
-      font-size:13px;
-      color:#1e293b;
+    #popup .row{margin:4px 0}
+    .popup-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:4px;
     }
-
+    .popup-head h4{
+      margin:0;
+      font-size:14px;
+      line-height:1.2;
+    }
+    .popup-close{
+      border:1px solid #d1d5db;
+      background:#fff;
+      border-radius:8px;
+      width:28px;
+      height:28px;
+      line-height:1;
+      font-size:16px;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
     .more-wrap{margin-top:8px}
     .more-btn{
       border:1px solid #bfdbfe;
       background:#eff6ff;
       color:#1d4ed8;
       border-radius:8px;
-      padding:5px 10px;
+      padding:6px 9px;
       font-size:12px;
-      font-weight:700;
       cursor:pointer;
     }
 
     #routeHint{
       position:absolute;
       left:10px;
-      bottom:10px;
-      z-index:71;
+      right:10px;
+      top:10px;
       display:none;
-      background:rgba(15,23,42,.88);
+      background:#111827d9;
       color:#fff;
-      border-radius:10px;
-      padding:7px 10px;
-      font-size:12px;
-      max-width:min(86vw,360px);
+      padding:8px 10px;
+      border-radius:8px;
+      z-index:75;
+      font-size:13px;
     }
 
     .list-card{
-      background:#fff;
+      background:var(--card);
       border:1px solid var(--line);
       border-radius:12px;
       overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
     }
     .list-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+      padding:12px;
       border-bottom:1px solid var(--line);
-      padding:10px 12px;
-      font-weight:700;
+    }
+    .list-head h3{
+      margin:0;
+      font-size:16px;
+    }
+    .list-head p{
+      margin:5px 0 0 0;
+      color:var(--muted);
+      font-size:12px;
     }
     .list{
       list-style:none;
       margin:0;
       padding:0;
-      max-height:65vh;
       overflow:auto;
     }
     .list li{border-bottom:1px solid #f1f5f9}
     .list button{
       width:100%;
-      text-align:left;
-      border:0;
+      border:none;
       background:#fff;
+      text-align:left;
       padding:10px 12px;
       cursor:pointer;
     }
     .list button:hover{background:#f8fafc}
     .list button.active{background:#eff6ff}
-    .i1{font-weight:700;font-size:14px}
-    .i2,.i3{font-size:12px;color:var(--muted);margin-top:2px}
+    .i1{font-size:13px; font-weight:600}
+    .i2{font-size:12px; color:#475569; margin-top:2px}
+    .i3{font-size:12px; color:#1d4ed8; margin-top:3px}
 
-    #stationPrompt{
+    .drawer-handle{display:none}
+
+    .prompt{
       position:fixed;
       inset:0;
-      background:rgba(2,6,23,.45);
+      background:rgba(15,23,42,.45);
       display:none;
       align-items:center;
       justify-content:center;
       z-index:120;
       padding:16px;
     }
-    #stationPrompt.show{display:flex}
-    .prompt-box{
-      width:min(92vw,420px);
+    .prompt.show{display:flex}
+    .prompt-card{
       background:#fff;
       border-radius:12px;
       border:1px solid var(--line);
+      width:min(380px, 100%);
       padding:14px;
     }
-    .prompt-title{font-size:16px;font-weight:800;margin-bottom:10px}
-    .prompt-actions{display:grid;gap:8px}
+    .prompt-card h4{margin:0 0 10px 0}
+    .prompt-actions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:10px;
+    }
     .prompt-actions .btn{text-align:left}
-    .prompt-foot{margin-top:10px;text-align:right}
+    .prompt-cancel{
+      width:100%;
+      margin-top:4px;
+    }
 
-    @media (max-width:768px){
-      .layout{
-        grid-template-columns:1fr;
+    @media (max-width: 768px){
+      .content{
+        display:block;
+        min-height:auto;
       }
-
       .mobile-tabs{
         display:flex;
       }
-
+      .map-card{
+        min-height:0;
+      }
       .list-card{
         position:fixed;
-        left:0;
-        right:0;
-        bottom:0;
-        z-index:80;
-        border-radius:14px 14px 0 0;
-        transform:translateY(calc(100% - 44px));
-        transition:transform .25s ease;
-        max-height:72vh;
+        left:10px;
+        right:10px;
+        bottom:10px;
+        max-height:58vh;
+        transform:translateY(calc(100% - 46px));
+        transition:transform .22s ease;
+        z-index:85;
       }
       .list-card.open{
         transform:translateY(0);
       }
-      .list-head{
+      .drawer-handle{
+        display:block;
+        text-align:center;
+        font-size:13px;
+        color:#475569;
+        padding:8px;
+        border-bottom:1px solid var(--line);
         cursor:pointer;
+        user-select:none;
       }
 
-      /* FIX 2: compact mobile details */
       #popup.mobile-sheet{
-        left:8px !important;
-        right:8px !important;
+        position:fixed;
+        left:10px !important;
+        right:10px !important;
+        bottom:10px !important;
         top:auto !important;
-        bottom:8px !important;
-        width:auto;
         max-width:none;
-        max-height:34dvh;
+        width:auto;
+        max-height:45vh;
         overflow:auto;
         border-radius:12px;
-        padding:10px 12px;
-        font-size:13px;
-        line-height:1.35;
       }
 
+      body.route-mobile .list-card{display:none;}
       body.route-mobile-fs .topbar,
-      body.route-mobile-fs .meta,
-      body.route-mobile-fs .mobile-tabs,
-      body.route-mobile-fs .list-card{
+      body.route-mobile-fs .titlecard,
+      body.route-mobile-fs .mobile-tabs{
         display:none !important;
       }
       body.route-mobile-fs .app{
-        padding:0;
         max-width:none;
+        padding:0;
+      }
+      body.route-mobile-fs .content{
+        margin:0;
       }
       body.route-mobile-fs .map-card{
         border-radius:0;
-        border:0;
+        border:none;
+        padding:0;
       }
       body.route-mobile-fs #campusMapWrap{
+        border-radius:0;
         height:100dvh;
         aspect-ratio:auto;
-        border:0;
       }
     }
   </style>
@@ -361,56 +407,50 @@
       <button id="resetZoomBtn" class="btn">Reset zoom</button>
     </div>
 
-    <div class="meta">
+    <div class="titlecard">
       <h2 id="mapTitle">HKU Main Campus Map (Food Map)</h2>
       <p id="mapNote">Walking time shown is from KKL Building.</p>
-      <div id="filterBar" class="filterbar"></div>
-      <div id="legend" class="legend"></div>
+      <div id="filterBar"></div>
     </div>
 
-    <div class="layout">
-      <div>
-        <div class="mobile-tabs">
-          <button id="mapTabBtn" class="btn active">🗺️ Map</button>
-          <button id="listTabBtn" class="btn">📋 List</button>
-        </div>
+    <div class="mobile-tabs">
+      <button id="mapTabBtn" class="btn active">🗺️ Map</button>
+      <button id="listTabBtn" class="btn">📋 List</button>
+    </div>
 
-        <div class="map-card">
-          <div id="campusMapWrap">
-            <div id="mapStage">
-              <img id="mapImage" src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU map">
-              <svg id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-            </div>
-
-            <div id="popup"></div>
-            <div id="routeHint"></div>
+    <div class="content">
+      <div class="map-card">
+        <p id="mapNoteInline" class="map-note-inline">Walking time shown is from KKL Building.</p>
+        <div id="campusMapWrap">
+          <div id="mapStage">
+            <!-- Replace with your actual file -->
+            <img id="mapImage" src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU map" />
+            <svg id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
           </div>
+          <div id="routeHint"></div>
+          <div id="popup"></div>
         </div>
       </div>
 
       <aside id="listPanel" class="list-card">
-        <div id="drawerHandle" class="list-head">
-          <span id="listLabel">Restaurant List</span>
-          <span>(<span id="listCount">0</span>)</span>
-        </div>
-        <div style="padding:8px 12px;color:#64748b;font-size:13px" id="mapNoteInline">
-          Walking time shown is from KKL Building.
+        <div id="drawerHandle" class="drawer-handle">Swipe / tap to open list</div>
+        <div class="list-head">
+          <h3><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
+          <p id="listSubNote">Walking time shown is from KKL Building.</p>
         </div>
         <ul id="restaurantList" class="list"></ul>
       </aside>
     </div>
   </div>
 
-  <div id="stationPrompt">
-    <div class="prompt-box">
-      <div class="prompt-title">Where are you coming from?</div>
+  <div id="stationPrompt" class="prompt">
+    <div class="prompt-card">
+      <h4>Where are you coming from?</h4>
       <div class="prompt-actions">
         <button class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
         <button class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
       </div>
-      <div class="prompt-foot">
-        <button id="cancelStationPrompt" class="btn">Cancel</button>
-      </div>
+      <button id="cancelStationPrompt" class="btn prompt-cancel">Cancel</button>
     </div>
   </div>
 
@@ -466,6 +506,7 @@
         title:"HKU Main Campus Map (Food Map)",
         listLabel:"Restaurant List",
         note:"Walking time shown is from KKL Building.",
+        listSubNote:"Walking time shown is from KKL Building.",
         items:restaurants,
         categories:[
           {key:"canteen",label:"Canteen",icon:"🍱"},
@@ -481,6 +522,7 @@
         title:"HKU Main Campus Map (Visit Map)",
         listLabel:"Visiting Points",
         note:"Explore heritage, museums, shops and photo spots.",
+        listSubNote:"Explore heritage, museums, shops and photo spots.",
         items:visitPoints,
         categories:[
           {key:"historical",label:"Historical Buildings",icon:"🏛️"},
@@ -524,11 +566,11 @@
     const list = document.getElementById('restaurantList');
     const listCount = document.getElementById('listCount');
     const listLabel = document.getElementById('listLabel');
+    const listSubNote = document.getElementById('listSubNote');
     const mapTitle = document.getElementById('mapTitle');
     const mapNote = document.getElementById('mapNote');
     const mapNoteInline = document.getElementById('mapNoteInline');
     const filterBar = document.getElementById('filterBar');
-    const legend = document.getElementById('legend');
     const routeHint = document.getElementById('routeHint');
 
     const foodModeBtn = document.getElementById('foodModeBtn');
@@ -617,12 +659,10 @@
     function zoomToPoint(xPct, yPct, targetScale){
       const rect = mapWrap.getBoundingClientRect();
       scale = clamp(targetScale, MIN_SCALE, maxScale());
-
       const px = (xPct / 100) * rect.width;
       const py = (yPct / 100) * rect.height;
       const targetX = rect.width * 0.5;
       const targetY = rect.height * 0.45;
-
       tx = targetX - px * scale;
       ty = targetY - py * scale;
       clampPan();
@@ -640,6 +680,18 @@
     function clearActive(){
       document.querySelectorAll('.marker.active').forEach(el=>el.classList.remove('active'));
       document.querySelectorAll('.list button.active').forEach(el=>el.classList.remove('active'));
+    }
+
+    function popupHeader(title){
+      if (isMobile()){
+        return `
+          <div class="popup-head">
+            <h4>${title}</h4>
+            <button class="popup-close" data-popup-close="1" aria-label="Close">✕</button>
+          </div>
+        `;
+      }
+      return `<div class="popup-head"><h4>${title}</h4></div>`;
     }
 
     function popupMoreBtnHTML(expanded){
@@ -660,7 +712,7 @@
           rows.splice(3, 0, `<div class="row"><b>Food:</b> ${p.food}</div>`);
           if (p.access) rows.push(`<div class="row"><b>Access:</b> ${p.access}</div>`);
         }
-        return `<h4>${p.icon} ${p.id}. ${p.name}</h4>${rows.join('')}${popupMoreBtnHTML(expanded)}`;
+        return `${popupHeader(`${p.icon} ${p.id}. ${p.name}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
       }
 
       const rows = [
@@ -675,7 +727,7 @@
         if (p.info) rows.push(`<div class="row">${p.info}</div>`);
       }
 
-      return `<h4>${p.icon} ${p.id}. ${p.name}</h4>${rows.join('')}${popupMoreBtnHTML(expanded)}`;
+      return `${popupHeader(`${p.icon} ${p.id}. ${p.name}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
     }
 
     function positionPopup(anchorEl){
@@ -730,7 +782,7 @@
       if (btn) btn.classList.add('active');
 
       zoomToPoint(p.x, p.y, isMobile() ? 1.22 : 1.45);
-      setTimeout(() => openPointPopup(p, marker), 120);
+      setTimeout(() => openPointPopup(p, marker), 110);
 
       if (isMobile()) setMobileTab('map');
     }
@@ -767,10 +819,12 @@
       h.title = "I'm here (KKL)";
       h.addEventListener('click', e => {
         e.stopPropagation();
+        clearActive();
+        h.classList.add('active');
         currentPopupPoint = null;
         popupExpanded = false;
         zoomToPoint(HERE.x, HERE.y, isMobile()?1.22:1.42);
-        openPopup(h, `<h4>📍 KKL Building</h4><div class="row">You are here.</div>`);
+        openPopup(h, `${popupHeader('📍 KKL Building')}<div class="row">You are here.</div>`);
       });
       mapStage.appendChild(h);
       hereMarkerEl = h;
@@ -840,28 +894,10 @@
         all && all.classList.add('active');
       } else {
         selectedTypes.forEach(t => {
-          const el = filterBar.querySelector(`[data-type="${t}"]`);
-          if (el) el.classList.add('active');
+          const chip = filterBar.querySelector(`[data-type="${t}"]`);
+          chip && chip.classList.add('active');
         });
       }
-    }
-
-    function renderLegend(){
-      const data = getActiveData();
-      legend.innerHTML = '';
-      if (currentMode === 'route') return;
-
-      data.categories.forEach(c => {
-        const s = document.createElement('span');
-        s.className = 'chip';
-        s.textContent = `${c.icon} ${c.label}`;
-        legend.appendChild(s);
-      });
-
-      const here = document.createElement('span');
-      here.className = 'chip';
-      here.textContent = '📍 I’m here (KKL)';
-      legend.appendChild(here);
     }
 
     function applyFilter(){
@@ -945,7 +981,6 @@
       popupExpanded = false;
       clearActive();
 
-      // draw route polyline in SVG (0..100 map coords)
       const ns = "http://www.w3.org/2000/svg";
       const poly = document.createElementNS(ns, "polyline");
       poly.setAttribute("points", route.path.map(p => `${p.x},${p.y}`).join(" "));
@@ -973,7 +1008,6 @@
       endDot.setAttribute("fill", "#dc2626");
       routeLayer.appendChild(endDot);
 
-      // station marker
       stationEl = document.createElement('button');
       stationEl.className = 'marker poi';
       stationEl.style.left = `${start.x}%`;
@@ -987,7 +1021,6 @@
       });
       mapStage.appendChild(stationEl);
 
-      // walker marker
       walkerEl = document.createElement('button');
       walkerEl.className = 'marker walker';
       walkerEl.style.left = `${start.x}%`;
@@ -1003,7 +1036,6 @@
 
       showRouteHint(`From ${route.name}: follow the blue line to KKL 📍`);
 
-      // fit/center route nicely when opened
       const xs = route.path.map(p => p.x);
       const ys = route.path.map(p => p.y);
       const minX = Math.min(...xs), maxX = Math.max(...xs);
@@ -1100,7 +1132,6 @@
         list.innerHTML = '';
         listCount.textContent = '0';
         filterBar.innerHTML = '';
-        legend.innerHTML = '';
 
         resetView();
         stationPrompt.classList.add('show');
@@ -1116,12 +1147,12 @@
       mapNote.textContent = data.note;
       mapNoteInline.textContent = data.note;
       listLabel.textContent = data.listLabel;
+      listSubNote.textContent = data.listSubNote || '';
 
       removePoiMarkers();
       data.items.forEach(createMarker);
       renderList();
       renderFilterBar();
-      renderLegend();
       applyFilter();
       resetView();
 
@@ -1162,8 +1193,19 @@
       });
     });
 
-    // More button (mobile popup)
+    // Popup buttons: close + more
     popup.addEventListener('click', (e)=>{
+      const closeBtn = e.target.closest('[data-popup-close="1"]');
+      if (closeBtn){
+        e.stopPropagation();
+        popup.style.display = 'none';
+        activeAnchorEl = null;
+        currentPopupPoint = null;
+        popupExpanded = false;
+        // keep current marker/list highlight
+        return;
+      }
+
       const moreBtn = e.target.closest('[data-popup-more="1"]');
       if (!moreBtn) return;
       e.stopPropagation();
@@ -1181,7 +1223,6 @@
       clearActive();
     });
 
-    // close popup when tapping blank map
     mapWrap.addEventListener('click', (e)=>{
       if (e.target.closest('.marker')) return;
       if (popup.contains(e.target)) return;
@@ -1192,7 +1233,6 @@
       clearActive();
     });
 
-    // wheel zoom (desktop / non-route)
     mapWrap.addEventListener('wheel', (e)=>{
       if (currentMode === 'route') return;
       e.preventDefault();
@@ -1270,7 +1310,7 @@
     // ---------------- INIT ----------------
     const mobileTabs = document.querySelector('.mobile-tabs');
     if (isMobile() && mobileTabs && mapWrap && mapWrap.parentNode) {
-      mapWrap.parentNode.insertBefore(mobileTabs, mapWrap); // move tabs above map
+      mapWrap.parentNode.insertBefore(mobileTabs, mapWrap);
     }
 
     if (mapImage.complete) syncMapRatioFromImage();
