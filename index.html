@@ -122,6 +122,19 @@
       margin:0;
     }
 
+    /* NEW: route buttons above map */
+    .route-buttons{
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .route-buttons.show{
+      display:flex;
+    }
+    .route-buttons .btn{
+      font-size:13px;
+    }
+
     #campusMapWrap{
       position:relative;
       width:100%;
@@ -372,6 +385,10 @@
         border-radius:12px;
       }
 
+      .route-buttons .btn{
+        flex:1 1 100%;
+      }
+
       body.route-mobile .list-card{display:none;}
       body.route-mobile-fs .topbar,
       body.route-mobile-fs .titlecard,
@@ -424,6 +441,13 @@
     <div class="content">
       <div class="map-card">
         <p id="mapNoteInline" class="map-note-inline">Walking time shown is from KKL Building.</p>
+
+        <!-- NEW: route selection buttons -->
+        <div id="routeButtons" class="route-buttons">
+          <button id="routeFromSypBtn" class="btn">🚉 From Sai Ying Pun Exit C</button>
+          <button id="routeFromHkuBtn" class="btn">🚉 From HKU Exit A2</button>
+        </div>
+
         <div id="campusMapWrap">
           <div id="mapStage">
             <!-- Replace with your actual file -->
@@ -588,6 +612,11 @@
 
     const stationPrompt = document.getElementById('stationPrompt');
     const cancelStationPrompt = document.getElementById('cancelStationPrompt');
+
+    // NEW: route button refs
+    const routeButtons = document.getElementById('routeButtons');
+    const routeFromSypBtn = document.getElementById('routeFromSypBtn');
+    const routeFromHkuBtn = document.getElementById('routeFromHkuBtn');
 
     // ---------------- STATE ----------------
     const markerById = new Map();
@@ -919,7 +948,8 @@
 
       data.items.forEach(p => {
         const show = !selectedTypes || selectedTypes.has(p.type);
-        const marker = markerById.get(p.id);
+        const marker = markerById
+      .get(p.id);
         const btn = listBtnById.get(p.id);
 
         if (marker) marker.style.display = show ? 'flex' : 'none';
@@ -1024,6 +1054,10 @@
       // highlight selected station icon among always-visible station markers
       routeStartMarkerByKey.forEach(el => el.classList.remove('active'));
       routeStartMarkerByKey.get(stationKey)?.classList.add('active');
+
+      // highlight selected route button
+      routeFromSypBtn?.classList.toggle('active', stationKey === 'sypC');
+      routeFromHkuBtn?.classList.toggle('active', stationKey === 'hkuA2');
 
       const ns = "http://www.w3.org/2000/svg";
       const poly = document.createElementNS(ns, "polyline");
@@ -1157,8 +1191,10 @@
 
       if (mode === 'route'){
         mapTitle.textContent = 'HKU Main Campus Map (Route to KKL)';
-        mapNote.textContent = 'Tap a station icon to view walking route.';
+        mapNote.textContent = 'Tap a station icon or button to view walking route.';
         mapNoteInline.textContent = mapNote.textContent;
+
+        routeButtons?.classList.add('show');
 
         removePoiMarkers();
         createRouteStartMarkers(); // keep both stations visible
@@ -1168,7 +1204,7 @@
 
         resetView();
         stationPrompt.classList.remove('show');
-        showRouteHint('Tap a station icon 🚉 to view route to KKL 📍');
+        showRouteHint('Tap a station icon 🚉 or route button to view route to KKL 📍');
 
         if (isMobile()) setMobileTab('map');
         updateMobileRouteUI();
@@ -1176,6 +1212,10 @@
       }
 
       // leaving route mode
+      routeButtons?.classList.remove('show');
+      routeFromSypBtn?.classList.remove('active');
+      routeFromHkuBtn?.classList.remove('active');
+
       clearRouteStartMarkers();
       stationPrompt.classList.remove('show');
 
@@ -1221,6 +1261,10 @@
     foodModeBtn.addEventListener('click', ()=>switchMode('food'));
     visitModeBtn.addEventListener('click', ()=>switchMode('visit'));
     routeModeBtn.addEventListener('click', ()=>switchMode('route'));
+
+    // NEW: route buttons above map
+    routeFromSypBtn?.addEventListener('click', () => drawRouteToKKL('sypC'));
+    routeFromHkuBtn?.addEventListener('click', () => drawRouteToKKL('hkuA2'));
 
     cancelStationPrompt.addEventListener('click', ()=> stationPrompt.classList.remove('show'));
     stationPrompt.querySelectorAll('[data-station]').forEach(btn=>{
