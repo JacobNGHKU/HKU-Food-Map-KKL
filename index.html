@@ -6,256 +6,394 @@
   <title>HKU Campus Map</title>
   <style>
     :root{
-      --bg:#f4f6fb;
-      --card:#ffffff;
-      --line:#d9e0ef;
-      --text:#1f2a44;
-      --blue:#1f4ea3;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; padding:24px;
-      font-family:Arial, sans-serif;
-      background:var(--bg); color:var(--text);
-    }
-    h1{margin:0 0 16px}
-    h2{margin:0 0 12px}
-    .panel{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:16px;
-      max-width:1400px;
-      margin:auto;
+      --bg:#f7f8fc;
+      --panel:#ffffff;
+      --line:#d8deea;
+      --text:#1a2b49;
+      --muted:#5f6f8f;
+      --brand:#1f4ea3;
+      --chip:#eef3ff;
     }
 
-    .top-controls{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      color:var(--text);
+      background:var(--bg);
+    }
+
+    .container{
+      width:min(1400px, 96vw);
+      margin:16px auto 24px;
+    }
+
+    .header{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
       margin-bottom:12px;
     }
-    .mode-switch{display:flex; gap:8px; flex-wrap:wrap;}
-    .mode-btn.active{
-      background:var(--blue);
-      color:#fff;
-      border-color:var(--blue);
+    .header h1{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+    .header p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
     }
 
-    .filter{
-      display:flex; flex-wrap:wrap; gap:8px;
-      align-items:center; margin-bottom:12px;
+    .mode-switch{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
     }
-    .chip{
-      display:inline-flex; align-items:center; gap:6px;
-      border:1px solid var(--line); border-radius:20px;
-      padding:6px 10px; background:#fff; font-size:14px;
+
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      border-radius:10px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+    }
+    .btn:hover{ border-color:#b9c7e3; }
+    .btn.active{
+      background:#1f4ea3;
+      color:#fff;
+      border-color:#1f4ea3;
+    }
+
+    .toolbar{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
     }
 
     .layout{
       display:grid;
-      grid-template-columns: 1.9fr 1fr;
-      gap:14px;
-    }
-    @media (max-width: 1000px){
-      .layout{ grid-template-columns: 1fr; }
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap:12px;
+      align-items:start;
     }
 
-    /* MAP */
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .list-panel h3{
+      margin:0 0 4px;
+      font-size:18px;
+    }
+    .list-panel .small{
+      color:var(--muted);
+      margin:0 0 10px;
+      font-size:13px;
+    }
+
+    #filterBar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background:var(--chip);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      color:#1f3767;
+      user-select:none;
+    }
+    .chip input{ margin:0; }
+
+    .list{
+      list-style:none;
+      margin:0;
+      padding:0;
+      max-height:72vh;
+      overflow:auto;
+    }
+    .list li{ margin:0 0 8px; }
+    .list button{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:10px;
+      padding:10px;
+      cursor:pointer;
+    }
+    .list button:hover{ border-color:#b7c8ee; }
+    .list button.active{
+      border-color:#1f4ea3;
+      box-shadow:0 0 0 2px rgba(31,78,163,.15);
+    }
+    .name{ font-weight:700; font-size:14px; margin-bottom:4px; }
+    .meta{ color:var(--muted); font-size:12px; line-height:1.35; }
+
+    .map-panel h2{
+      margin:0 0 6px;
+      font-size:20px;
+    }
+    .map-note{
+      margin:0 0 10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
     .map-wrap{
       position:relative;
+      width:100%;
+      aspect-ratio: 16 / 10;
       border:1px solid var(--line);
-      border-radius:10px;
+      border-radius:12px;
       overflow:hidden;
       background:#fff;
     }
-    .map-stage{
+
+    #mapStage{
       position:relative;
       width:100%;
+      height:100%;
       transform-origin:50% 50%;
       transform:scale(1);
-      transition:transform .28s ease, transform-origin .18s ease;
-      will-change: transform, transform-origin;
+      transition:transform .18s ease;
     }
-    .map-stage img{
+
+    #campusMap{
       width:100%;
-      height:auto;
+      height:100%;
+      object-fit:contain;
       display:block;
       user-select:none;
       -webkit-user-drag:none;
+      pointer-events:auto;
+      background:#f0f4ff;
     }
 
-    .toolbar{
+    .route-layer{
       position:absolute;
-      top:10px; right:10px;
-      z-index:40;
-      display:flex; gap:8px;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:15;
+      pointer-events:none;
     }
-    .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:8px;
-      padding:6px 10px;
-      cursor:pointer;
-      font-size:13px;
+    .route-line{
+      fill:none;
+      stroke:#1f4ea3;
+      stroke-width:0.85;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:2 1.2;
     }
+    .route-start-dot{ fill:#0ea5e9; }
+    .route-end-dot{ fill:#1f4ea3; }
 
     .marker{
       position:absolute;
       transform:translate(-50%, -50%);
-      width:28px; height:28px;
-      border:none; border-radius:50%;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      border:1px solid #bfd0f2;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
       cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      font-size:15px; line-height:1;
-      box-shadow:0 2px 8px rgba(0,0,0,.25);
-      z-index:20;
-    }
-    .marker:hover{ transform:translate(-50%, -50%) scale(1.12); }
-    .marker.active{
-      outline:3px solid #1f4ea355;
-      box-shadow:0 0 0 6px #1f4ea322, 0 3px 12px rgba(0,0,0,.28);
       z-index:25;
+      box-shadow:0 3px 10px rgba(0,0,0,.14);
     }
-
+    .marker:hover{ transform:translate(-50%, -50%) scale(1.06); }
+    .marker.active{
+      border:2px solid #1f4ea3;
+      box-shadow:0 0 0 3px rgba(31,78,163,.18);
+    }
     .marker.here{
-      background:#1f4ea3;
-      color:#fff;
-      border:2px solid #fff;
-      z-index:35;
-      cursor:pointer;
-      transform:translate(-50%, -62%);
+      border:2px solid #ef4444;
+      z-index:30;
+      width:30px;
+      height:30px;
     }
-    .marker.here:hover{
-      transform:translate(-50%, -62%) scale(1.06);
+    .marker.walker{
+      background:#fff;
+      border:2px solid #1f4ea3;
+      width:30px;
+      height:30px;
+      z-index:32;
+      cursor:default;
     }
-
-    /* food colors */
-    .canteen{ background:#fff4cc; }
-    .cafe{ background:#d9f4ff; }
-    .western{ background:#ffe0e0; }
-    .asian{ background:#efe2ff; }
-    .halal{ background:#e2ffe8; }
-    .vegetarian{ background:#e8fff8; }
-    .vending{ background:#fff0e6; }
-
-    /* visit colors */
-    .historical{ background:#efe6d6; }
-    .museum{ background:#e0f7ff; }
-    .souvenir{ background:#ffe9f3; }
-    .photo{ background:#fff6cc; }
 
     .popup{
       position:absolute;
-      min-width:250px;
-      max-width:360px;
-      max-height:60vh;
-      overflow:auto;
+      z-index:70;
+      min-width:240px;
+      max-width:min(380px, 88vw);
       background:#fff;
       border:1px solid var(--line);
       border-radius:10px;
       padding:10px;
-      box-shadow:0 8px 24px rgba(0,0,0,.2);
+      box-shadow:0 10px 24px rgba(0,0,0,.22);
       display:none;
-      z-index:50;
       font-size:13px;
+      line-height:1.4;
     }
-    .popup h4{ margin:0 0 6px; font-size:15px; color:#0d2f6f; }
-    .popup p{ margin:4px 0; }
-
-    .walk-time{
-      font-weight:700;
-      padding:2px 8px;
-      border-radius:999px;
-      display:inline-block;
-    }
-    .walk-green{ background:#e8f7ec; color:#1f7a3f; }
-    .walk-orange{ background:#fff3e6; color:#b86400; }
-    .walk-red{ background:#ffe9e9; color:#b42323; }
-
-    .list-panel{
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      min-height:400px;
-    }
-    .list-header{
-      padding:12px;
-      border-bottom:1px solid var(--line);
-      font-weight:700;
-      color:#0d2f6f;
-    }
-    .list{
-      list-style:none; margin:0; padding:0;
-      max-height:72vh; overflow:auto;
-    }
-    .list li{ border-bottom:1px solid #edf1fa; }
-    .list button{
-      width:100%;
-      text-align:left;
-      border:none; background:#fff;
-      padding:10px 12px;
-      cursor:pointer;
-    }
-    .list button:hover{ background:#f7f9ff; }
-    .list button.active{ background:#eaf1ff; }
-    .name{ font-weight:700; font-size:14px; }
-    .meta{ font-size:12px; color:#56617a; margin-top:2px; }
+    .popup h4{ margin:0 0 6px; font-size:14px; }
+    .popup p{ margin:0 0 4px; }
 
     .legend{
-      margin-top:12px;
-      display:flex; flex-wrap:wrap; gap:8px;
+      margin-top:10px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
     }
-    .dot{
-      width:18px; height:18px; border-radius:50%;
-      display:inline-flex; align-items:center; justify-content:center;
+
+    .walk-time{
+      display:inline-block;
+      border-radius:999px;
+      padding:2px 8px;
       font-size:12px;
+      font-weight:700;
+      border:1px solid transparent;
     }
-    .note{font-size:12px; color:#5a6785; margin-top:10px;}
+    .walk-green{ color:#0f6b2d; background:#e9f9ee; border-color:#bceacb; }
+    .walk-orange{ color:#8a5300; background:#fff4e5; border-color:#f7d7a6; }
+    .walk-red{ color:#8f1d1d; background:#ffeaea; border-color:#f5baba; }
+
+    /* Route-only layout */
+    #mapSection.route-mode .layout{ grid-template-columns:1fr; }
+    #mapSection.route-mode .list-panel,
+    #mapSection.route-mode #filterBar,
+    #mapSection.route-mode #legend{ display:none; }
+
+    /* Bottom ROUTE MESSAGE */
+    .route-hint{
+      position:absolute;
+      left:50%;
+      bottom:14px;                 /* distance from bottom of map */
+      transform:translateX(-50%);  /* only center horizontally */
+      z-index:80;
+      background:#ffffff;
+      border:2px solid #1f4ea3;
+      border-radius:14px;
+      padding:12px 16px;
+      box-shadow:0 12px 28px rgba(0,0,0,.25);
+      font-size:16px;
+      font-weight:700;
+      color:#0d2f6f;
+      text-align:center;
+      width:min(90%, 620px);
+      pointer-events:none;
+      display:none;
+    }
+
+    .prompt-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:200;
+    }
+    .prompt-backdrop.show{ display:flex; }
+    .prompt-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:16px;
+      width:min(92vw, 420px);
+      box-shadow:0 10px 24px rgba(0,0,0,.25);
+    }
+    .prompt-actions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    a{ color:#1f4ea3; }
   </style>
 </head>
 <body>
-  <h1>HKU Campus Map</h1>
+  <div class="container">
+    <section class="header">
+      <h1>HKU Campus Map</h1>
+      <p id="mapTitle">HKU Main Campus Map (Food Map)</p>
 
-  <section class="panel" id="mapSection">
-    <div class="top-controls">
-      <h2 id="mapTitle">HKU Main Campus Map (Food Map)</h2>
       <div class="mode-switch">
-        <button class="btn mode-btn active" id="foodModeBtn">🍱 Food Map</button>
-        <button class="btn mode-btn" id="visitModeBtn">🏛️ Visit Map</button>
-      </div>
-    </div>
-
-    <div class="filter" id="filterBar"></div>
-
-    <div class="layout">
-      <div class="map-wrap" id="campusMapWrap">
-        <div class="toolbar">
-          <button class="btn" id="resetZoomBtn">Reset zoom</button>
-        </div>
-
-        <div class="map-stage" id="mapStage">
-          <img id="campusMap"
-            src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg"
-            alt="HKU Main Campus Map" />
-        </div>
-
-        <div id="popup" class="popup"></div>
+        <button class="btn active" id="foodModeBtn">🍱 Food Map</button>
+        <button class="btn" id="visitModeBtn">🏛️ Visit Map</button>
+        <button class="btn" id="routeModeBtn">🚶 To KKL</button>
       </div>
 
-      <aside class="list-panel">
-        <div class="list-header"><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</div>
-        <ul class="list" id="restaurantList"></ul>
-      </aside>
-    </div>
+      <div class="toolbar">
+        <p id="mapNote" style="margin:0;color:var(--muted);font-size:13px;">Walking time shown is from KKL Building.</p>
+        <button class="btn" id="resetZoomBtn">Reset zoom</button>
+      </div>
+    </section>
 
-    <div class="legend" id="legend"></div>
-    <p class="note" id="mapNote">Walking time shown is from KKL Building.</p>
-  </section>
+    <section id="mapSection">
+      <div class="layout">
+        <aside class="panel list-panel">
+          <h3><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
+          <p class="small">Select a point from the list or map.</p>
+          <div id="filterBar"></div>
+          <ul id="restaurantList" class="list"></ul>
+        </aside>
+
+        <section class="panel map-panel">
+          <h2 id="mapTitleInline">HKU Main Campus Map</h2>
+          <p class="map-note" id="mapNoteInline">Walking time shown is from KKL Building.</p>
+
+          <div class="map-wrap" id="campusMapWrap">
+            <div id="mapStage">
+              <!-- replace src with your campus map image path -->
+              <img id="campusMap" src="./Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU Main Campus Map">
+
+              <svg id="routeLayer" class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+
+              <div id="popup" class="popup"></div>
+              <div id="routeHint" class="route-hint"></div>
+            </div>
+          </div>
+
+          <div id="legend" class="legend"></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <!-- Route station prompt -->
+  <div id="stationPrompt" class="prompt-backdrop" role="dialog" aria-modal="true" aria-labelledby="stationPromptTitle">
+    <div class="prompt-card">
+      <h3 id="stationPromptTitle" style="margin:0 0 10px;">Where are you coming from?</h3>
+      <div class="prompt-actions">
+        <button class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
+        <button class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
+        <button class="btn" id="cancelStationPrompt">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ---------------------------
@@ -287,7 +425,6 @@
     // VISIT DATA
     // ---------------------------
     const visitPoints = [
-      // Historical
       {id:1, name:"Main Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:3, x:37.76, y:69.13, info:"The oldest structure on HKU Main Campus. Construction began in 1910 and completed in 1912. Exterior declared a monument in 1984."},
       {id:2, name:"Hung Hing Ying Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:37.16, y:80.56, info:"Opened in 1919, originally designed as the Union Building. Exterior declared a monument in 1995."},
       {id:3, name:"Fung Ping Shan Building, The University of Hong Kong", type:"historical", icon:"🏛️", walkMin:5, x:19.40, y:69.13, info:"Completed in 1932 as a Chinese library and later became part of the University Museum and Art Gallery. Exterior declared a monument in 2018."},
@@ -298,18 +435,12 @@
       {id:8, name:"Senior Staff Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:78.22, y:67.68, info:"Built in 1925 for site managers. Now known as Run Run Shaw Heritage House. Grade 2 historic building."},
       {id:9, name:"Workmen's Quarters, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:85.83, y:68.95, info:"Built between 1918 and 1919 as quarters for Chinese staff. Now HKU Visitor Centre. Grade 3 historic building."},
       {id:10, name:"Treatment Works Building, Elliot Pumping Station and Filters", type:"historical", icon:"🏛️", walkMin:15, x:90.90, y:41.55, info:"Built between 1930 and 1931 as a filtration plant. Grade 3 historic building."},
-
-      // Art Gallery / Museum
       {id:11, name:"University Museum & Art Gallery", type:"museum", icon:"🖼️", walkMin:5, building:"Fung Ping Shan Building", location:"1-2/F", hours:"Tuesday–Saturday 9:30am–6:00pm; Sunday 1:00pm–6:00pm; Closed on Mondays, Public and University Holidays.", x:17.36, y:70.22},
       {id:12, name:"Stephen Hui Geological Museum", type:"museum", icon:"🖼️", walkMin:5, building:"James Lee Science Building", location:"G-1/F", hours:"Mondays to Fridays from 1:00pm to 6:00pm. Closed on Saturdays, Sundays, Public and University Holidays (March 16, December 24, 31 and Chinese New Year Eve). Weekday mornings are reserved for guided group tours.", info:"We welcome individual visitors to walk in during opening hours, free of charge.", x:47.54, y:37.88},
       {id:13, name:"Jao Tsung-I Petite Ecole", type:"museum", icon:"🖼️", walkMin:3, building:"Tang Chi Ngong Building", hours:"10:00am – 5:00pm Monday to Friday (Closed on Saturdays, Sundays & University/Public Holidays)", x:12.04, y:61.00},
       {id:14, name:"Hong Kong Biodiversity Museum", type:"museum", icon:"🖼️", walkMin:5, building:"Kadoorie Biological Sciences Building", location:"2/F", hours:"Wed, Sat, Sun (45 min session)", bookingUrl:"https://www.hkbiodiversitymuseum.org/booking-calendar/%E5%8D%9A%E9%81%8A%E7%94%9F%E7%89%A9-biodiversity-journey", x:47.38, y:55.57},
-
-      // Souvenir / Book shop
       {id:15, name:"Visitor Centre (Souvenir Shop)", type:"souvenir", icon:"🛍️", walkMin:13, hours:"9:30AM – 5:00PM (Mon – Sat); 11:00AM – 5:00PM (Sun); Closed on University and Public Holidays", x:83.70, y:68.93},
       {id:16, name:"HKUP Bookshop", type:"souvenir", icon:"🛍️", walkMin:13, building:"Run Run Shaw Heritage House", location:"G/F", hours:"Monday to Friday 10:00am to 5:00pm (closes on Public and University holidays)", x:80.57, y:67.75},
-
-      // Popular photo points
       {id:17, name:"Red Brick Wall", type:"photo", icon:"📸", walkMin:10, x:88.67, y:62.53},
       {id:18, name:"Main Building", type:"photo", icon:"📸", walkMin:5, x:37.65, y:74.02},
       {id:19, name:"Lily Pond", type:"photo", icon:"📸", walkMin:5, x:30.21, y:44.61},
@@ -323,13 +454,13 @@
         note: "Walking time shown is from KKL Building.",
         items: restaurants,
         categories: [
-          {key:"canteen", label:"Canteen", icon:"🍱", className:"canteen"},
-          {key:"cafe", label:"Cafe", icon:"☕", className:"cafe"},
-          {key:"western", label:"Western", icon:"🥪", className:"western"},
-          {key:"asian", label:"Asian", icon:"🍜", className:"asian"},
-          {key:"halal", label:"Halal", icon:"🕌", className:"halal"},
-          {key:"vegetarian", label:"Vegetarian", icon:"🥗", className:"vegetarian"},
-          {key:"vending", label:"Vending", icon:"🥡", className:"vending"}
+          {key:"canteen", label:"Canteen", icon:"🍱"},
+          {key:"cafe", label:"Cafe", icon:"☕"},
+          {key:"western", label:"Western", icon:"🥪"},
+          {key:"asian", label:"Asian", icon:"🍜"},
+          {key:"halal", label:"Halal", icon:"🕌"},
+          {key:"vegetarian", label:"Vegetarian", icon:"🥗"},
+          {key:"vending", label:"Vending", icon:"🥡"}
         ]
       },
       visit: {
@@ -338,17 +469,64 @@
         note: "Explore campus heritage, museums, shops, and photo spots.",
         items: visitPoints,
         categories: [
-          {key:"historical", label:"Historical Buildings", icon:"🏛️", className:"historical"},
-          {key:"museum", label:"Art Gallery / Museum", icon:"🖼️", className:"museum"},
-          {key:"souvenir", label:"Souvenir Shop / Book Shop", icon:"🛍️", className:"souvenir"},
-          {key:"photo", label:"Popular Photo Spot", icon:"📸", className:"photo"}
+          {key:"historical", label:"Historical Buildings", icon:"🏛️"},
+          {key:"museum", label:"Art Gallery / Museum", icon:"🖼️"},
+          {key:"souvenir", label:"Souvenir Shop / Book Shop", icon:"🛍️"},
+          {key:"photo", label:"Popular Photo Spot", icon:"📸"}
         ]
       }
     };
 
-    // Fixed "I'm here" location (KKL)
     const HERE = { x:24.04, y:56.28, yOffset:-1.2 };
 
+    // Route data
+    const ROUTES_TO_KKL = {
+      hkuA2: {
+        name: "HKU Station Exit A2",
+        path: [
+          {x:54.07, y:52.07},
+          {x:54.31, y:50.44},
+          {x:52.25, y:49.72},
+          {x:53.10, y:43.55},
+          {x:48.15, y:43.00},
+          {x:47.06, y:51.53},
+          {x:44.65, y:53.53}, // escalator
+          {x:38.37, y:54.61},
+          {x:38.37, y:59.33},
+          {x:32.93, y:57.88},
+          {x:27.13, y:57.15},
+          {x:24.11, y:57.52}
+        ],
+        milestones: [
+          { index: 6, message: "⬇️ Please go down the escalator here." }
+        ]
+      },
+      sypC: {
+        name: "Sai Ying Pun Station Exit C",
+        path: [
+          {x:6.43, y:79.20},
+          {x:8.81, y:78.75},
+          {x:10.53, y:77.29},
+          {x:11.26, y:72.94},
+          {x:13.43, y:71.85},
+          {x:13.92, y:74.39},
+          {x:15.85, y:77.84},
+          {x:20.68, y:80.02},
+          {x:25.63, y:80.20},
+          {x:26.84, y:79.84},
+          {x:26.72, y:77.11},
+          {x:27.56, y:72.03},
+          {x:29.01, y:69.49}, // elevator
+          {x:30.46, y:57.52},
+          {x:25.99, y:57.52}
+        ],
+        milestones: [
+          { index: 12, message: "🛗 Please take the elevator to 2/F here." }
+        ]
+      }
+    };
+
+    // DOM refs
     const mapSection = document.getElementById('mapSection');
     const mapStage = document.getElementById('mapStage');
     const mapWrap = document.getElementById('campusMapWrap');
@@ -357,11 +535,21 @@
     const listCount = document.getElementById('listCount');
     const listLabel = document.getElementById('listLabel');
     const mapTitle = document.getElementById('mapTitle');
+    const mapTitleInline = document.getElementById('mapTitleInline');
     const mapNote = document.getElementById('mapNote');
+    const mapNoteInline = document.getElementById('mapNoteInline');
     const filterBar = document.getElementById('filterBar');
     const legend = document.getElementById('legend');
+
     const foodModeBtn = document.getElementById('foodModeBtn');
     const visitModeBtn = document.getElementById('visitModeBtn');
+    const routeModeBtn = document.getElementById('routeModeBtn');
+    const resetZoomBtn = document.getElementById('resetZoomBtn');
+
+    const routeLayer = document.getElementById('routeLayer');
+    const routeHint = document.getElementById('routeHint');
+    const stationPrompt = document.getElementById('stationPrompt');
+    const cancelStationPrompt = document.getElementById('cancelStationPrompt');
 
     const markerById = new Map();
     const listBtnById = new Map();
@@ -373,6 +561,12 @@
     let currentOrigin = { x:50, y:50 };
     const MIN_SCALE = 1;
     const MAX_SCALE = 3;
+
+    // route state
+    let walkerEl = null;
+    let stationEl = null;
+    let routeAnimId = null;
+    let lastRouteStationKey = null;
 
     function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
 
@@ -396,6 +590,10 @@
 
     function walkTimeHTML(min){
       return `<span class="walk-time ${walkColorClass(min)}">🚶 ${min} min</span>`;
+    }
+
+    function getActiveData(){
+      return DATASETS[currentMode === 'visit' ? 'visit' : 'food'];
     }
 
     function categoryLabel(type){
@@ -437,12 +635,7 @@
 
       popup.style.left = `${left}px`;
       popup.style.top = `${top}px`;
-
       activeAnchorEl = anchorEl;
-    }
-
-    function getActiveData(){
-      return DATASETS[currentMode];
     }
 
     function pointPopupHTML(p){
@@ -451,7 +644,7 @@
           <h4>${p.id}. ${p.name}</h4>
           <p><strong>Building:</strong> ${p.building}</p>
           <p><strong>Location:</strong> ${p.location}</p>
-          <p><strong>Type:</strong> ${p.type}</p>
+          <p><strong>Type:</strong> ${categoryLabel(p.type)}</p>
           <p><strong>Food:</strong> ${p.food}</p>
           ${p.access ? `<p><strong>Access:</strong> ${p.access}</p>` : ''}
           <p><strong>Walk from KKL:</strong> ${walkTimeHTML(p.walkMin)}</p>
@@ -471,6 +664,8 @@
     }
 
     function focusPoint(p){
+      if (currentMode === 'route') return;
+
       clearActive();
       const marker = markerById.get(p.id);
       const listBtn = listBtnById.get(p.id);
@@ -479,7 +674,6 @@
 
       mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
       zoomToPoint(p.x, p.y, 1.8);
-
       setTimeout(() => openPopupNearElement(marker, pointPopupHTML(p)), 180);
     }
 
@@ -490,7 +684,7 @@
 
     function createMarker(p){
       const btn = document.createElement('button');
-      btn.className = `marker poi ${p.type}`;
+      btn.className = `marker poi`;
       btn.style.left = p.x + '%';
       btn.style.top = p.y + '%';
       btn.innerHTML = p.icon;
@@ -510,6 +704,7 @@
 
     function createHereMarker(){
       if (hereMarkerEl) return;
+
       const here = document.createElement('button');
       here.className = 'marker here';
       here.style.left = `${HERE.x}%`;
@@ -521,15 +716,18 @@
       here.addEventListener('click', (e) => {
         e.stopPropagation();
         clearActive();
-        mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
-        zoomToPoint(HERE.x, HERE.y, 2.0);
 
-        setTimeout(() => {
-          openPopupNearElement(here, `
-            <h4>📍 You are at KKL Building</h4>
-            <p>Use the map or list to explore nearby points.</p>
-          `);
-        }, 180);
+        if (currentMode !== 'route') {
+          mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
+          zoomToPoint(HERE.x, HERE.y, 2.0);
+
+          setTimeout(() => {
+            openPopupNearElement(here, `
+              <h4>📍 You are at KKL Building</h4>
+              <p>Use the map or list to explore nearby points.</p>
+            `);
+          }, 180);
+        }
       });
 
       hereMarkerEl = here;
@@ -539,7 +737,6 @@
     function createList(){
       list.innerHTML = '';
       listBtnById.clear();
-
       const data = getActiveData();
 
       data.items.forEach(p => {
@@ -577,7 +774,7 @@
 
     function renderFilterBar(){
       const data = getActiveData();
-      filterBar.innerHTML = `<strong>Filter:</strong>`;
+      filterBar.innerHTML = '';
 
       const all = document.createElement('label');
       all.className = 'chip';
@@ -587,7 +784,7 @@
       data.categories.forEach(cat => {
         const label = document.createElement('label');
         label.className = 'chip';
-        label.innerHTML = `<input type="checkbox" value="${cat.key}" checked> ${cat.label}`;
+        label.innerHTML = `<input type="checkbox" value="${cat.key}" checked> ${cat.icon} ${cat.label}`;
         filterBar.appendChild(label);
       });
 
@@ -614,20 +811,20 @@
       data.categories.forEach(cat => {
         const chip = document.createElement('span');
         chip.className = 'chip';
-        chip.innerHTML = `<span class="dot ${cat.className}">${cat.icon}</span> ${cat.label}`;
+        chip.innerHTML = `${cat.icon} ${cat.label}`;
         legend.appendChild(chip);
       });
 
       if (currentMode === 'food') {
         const extra = document.createElement('span');
         extra.className = 'chip';
-        extra.innerHTML = `<span class="dot" style="background:#f0ecff;">🍽️</span> Staff/Members only (Chinese + Western)`;
+        extra.innerHTML = `🍽️ Staff/Members only`;
         legend.appendChild(extra);
       }
 
       const here = document.createElement('span');
       here.className = 'chip';
-      here.innerHTML = `<span class="dot" style="background:#1f4ea3;color:#fff;">📍</span> I’m here (KKL)`;
+      here.innerHTML = `📍 I’m here (KKL)`;
       legend.appendChild(here);
     }
 
@@ -642,6 +839,8 @@
     }
 
     function applyFilter(){
+      if (currentMode === 'route') return;
+
       const data = getActiveData();
       const { allChecked, chosen } = selectedTypes();
       let visibleCount = 0;
@@ -662,15 +861,202 @@
       clearActive();
     }
 
+    // ---------------------------
+    // ROUTE MODE HELPERS
+    // ---------------------------
+    function showRouteHint(msg){
+      routeHint.textContent = msg;
+      routeHint.style.display = 'block';
+    }
+
+    function hideRouteHint(){
+      routeHint.style.display = 'none';
+      routeHint.textContent = '';
+    }
+
+    function clearRoute(){
+      routeLayer.innerHTML = '';
+      if (walkerEl) { walkerEl.remove(); walkerEl = null; }
+      if (stationEl) { stationEl.remove(); stationEl = null; }
+      if (routeAnimId) { cancelAnimationFrame(routeAnimId); routeAnimId = null; }
+      hideRouteHint();
+    }
+
+    function pathMetrics(path){
+      const cum = [0];
+      for (let i = 1; i < path.length; i++){
+        const dx = path[i].x - path[i - 1].x;
+        const dy = path[i].y - path[i - 1].y;
+        cum[i] = cum[i - 1] + Math.hypot(dx, dy);
+      }
+      return { cum, total: cum[cum.length - 1] };
+    }
+
+    function pointAtDistance(path, cum, d){
+      if (d <= 0) return path[0];
+      const total = cum[cum.length - 1];
+      if (d >= total) return path[path.length - 1];
+
+      let i = 1;
+      while (i < cum.length && cum[i] < d) i++;
+
+      const d0 = cum[i - 1], d1 = cum[i];
+      const t = (d - d0) / (d1 - d0);
+
+      return {
+        x: path[i - 1].x + (path[i].x - path[i - 1].x) * t,
+        y: path[i - 1].y + (path[i].y - path[i - 1].y) * t
+      };
+    }
+
+    function drawRouteToKKL(stationKey){
+      const route = ROUTES_TO_KKL[stationKey];
+      if (!route) return;
+
+      lastRouteStationKey = stationKey;
+
+      clearRoute();
+      clearActive();
+      popup.style.display = 'none';
+      activeAnchorEl = null;
+
+      const ns = "http://www.w3.org/2000/svg";
+
+      const poly = document.createElementNS(ns, "polyline");
+      poly.setAttribute("class", "route-line");
+      poly.setAttribute("points", route.path.map(p => `${p.x},${p.y}`).join(" "));
+      routeLayer.appendChild(poly);
+
+      const start = route.path[0];
+      const end = route.path[route.path.length - 1];
+
+      const sDot = document.createElementNS(ns, "circle");
+      sDot.setAttribute("class", "route-start-dot");
+      sDot.setAttribute("cx", start.x);
+      sDot.setAttribute("cy", start.y);
+      sDot.setAttribute("r", "1.1");
+      routeLayer.appendChild(sDot);
+
+      const eDot = document.createElementNS(ns, "circle");
+      eDot.setAttribute("class", "route-end-dot");
+      eDot.setAttribute("cx", end.x);
+      eDot.setAttribute("cy", end.y);
+      eDot.setAttribute("r", "1.2");
+      routeLayer.appendChild(eDot);
+
+      // Keep emoji button on map, clickable to replay route
+      stationEl = document.createElement('button');
+      stationEl.className = 'marker poi';
+      stationEl.style.left = `${start.x}%`;
+      stationEl.style.top = `${start.y}%`;
+      stationEl.innerHTML = '🚉';
+      stationEl.style.zIndex = '28';
+      stationEl.style.pointerEvents = 'auto';
+      stationEl.title = `${route.name} (click to replay route)`;
+      stationEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (lastRouteStationKey) drawRouteToKKL(lastRouteStationKey);
+      });
+      mapStage.appendChild(stationEl);
+
+      walkerEl = document.createElement('button');
+      walkerEl.className = 'marker walker';
+      walkerEl.style.left = `${start.x}%`;
+      walkerEl.style.top = `${start.y}%`;
+      walkerEl.textContent = '🚶';
+      walkerEl.title = 'Click to replay route';
+      walkerEl.setAttribute('aria-label', 'Replay route');
+      walkerEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (lastRouteStationKey) drawRouteToKKL(lastRouteStationKey);
+      });
+      mapStage.appendChild(walkerEl);
+
+      // IMPORTANT: no auto zoom in route mode (removed zoomToRoute call)
+      showRouteHint(`From ${route.name}: follow the blue line to KKL 📍`);
+
+      const { cum, total } = pathMetrics(route.path);
+      const milestoneDistance = (route.milestones || []).map(m => ({
+        d: cum[m.index],
+        message: m.message,
+        shown: false
+      }));
+
+      const duration = 12000;
+      const startTime = performance.now();
+
+      function frame(now){
+        const t = Math.min((now - startTime) / duration, 1);
+        const d = total * t;
+        const pt = pointAtDistance(route.path, cum, d);
+
+        walkerEl.style.left = `${pt.x}%`;
+        walkerEl.style.top = `${pt.y}%`;
+
+        milestoneDistance.forEach(m => {
+          if (!m.shown && d >= m.d){
+            m.shown = true;
+            showRouteHint(m.message);
+          }
+        });
+
+        if (t < 1){
+          routeAnimId = requestAnimationFrame(frame);
+        } else {
+          showRouteHint("✅ You have arrived at KKL Building.");
+          routeAnimId = null;
+        }
+      }
+
+      routeAnimId = requestAnimationFrame(frame);
+    }
+
+    // ---------------------------
+    // MODE SWITCH
+    // ---------------------------
     function switchMode(mode){
       currentMode = mode;
+      clearRoute();
+
       foodModeBtn.classList.toggle('active', mode === 'food');
       visitModeBtn.classList.toggle('active', mode === 'visit');
+      routeModeBtn.classList.toggle('active', mode === 'route');
+
+      mapSection.classList.toggle('route-mode', mode === 'route');
+      resetZoomBtn.style.display = (mode === 'route') ? 'none' : 'inline-flex';
+
+      popup.style.display = 'none';
+      activeAnchorEl = null;
+      clearActive();
+
+      if (mode === 'route'){
+        mapTitle.textContent = "HKU Main Campus Map (Route to KKL)";
+        mapTitleInline.textContent = "HKU Main Campus Map";
+        mapNote.textContent = "Select your MTR station exit to view walking route.";
+        mapNoteInline.textContent = "Select your MTR station exit to view walking route.";
+
+        removePoiMarkers();
+        list.innerHTML = '';
+        listCount.textContent = '0';
+        filterBar.innerHTML = '';
+        legend.innerHTML = '';
+
+        currentScale = 1;
+        currentOrigin = { x:50, y:50 };
+        applyZoom();
+
+        stationPrompt.classList.add('show');
+        return;
+      }
+
+      stationPrompt.classList.remove('show');
 
       const data = getActiveData();
-      mapTitle.textContent = data.title;
       listLabel.textContent = data.listLabel;
+      mapTitle.textContent = data.title;
+      mapTitleInline.textContent = "HKU Main Campus Map";
       mapNote.textContent = data.note;
+      mapNoteInline.textContent = data.note;
 
       removePoiMarkers();
       data.items.forEach(createMarker);
@@ -681,23 +1067,43 @@
       applyFilter();
 
       currentScale = 1;
-      currentOrigin = {x:50, y:50};
+      currentOrigin = { x:50, y:50 };
       applyZoom();
     }
 
+    // ---------------------------
+    // EVENTS
+    // ---------------------------
     foodModeBtn.addEventListener('click', () => switchMode('food'));
     visitModeBtn.addEventListener('click', () => switchMode('visit'));
+    routeModeBtn.addEventListener('click', () => switchMode('route'));
 
-    document.getElementById('resetZoomBtn').addEventListener('click', () => {
+    cancelStationPrompt.addEventListener('click', () => {
+      stationPrompt.classList.remove('show');
+    });
+
+    stationPrompt.querySelectorAll('[data-station]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.station;
+        stationPrompt.classList.remove('show');
+        drawRouteToKKL(key);
+      });
+    });
+
+    resetZoomBtn.addEventListener('click', () => {
       currentScale = 1;
-      currentOrigin = {x:50, y:50};
+      currentOrigin = { x:50, y:50 };
       applyZoom();
       popup.style.display = 'none';
       activeAnchorEl = null;
       clearActive();
+      clearRoute();
     });
 
+    // Disable zoom in route mode
     mapWrap.addEventListener('wheel', (e) => {
+      if (currentMode === 'route') return;
+
       e.preventDefault();
 
       const rect = mapStage.getBoundingClientRect();
@@ -742,6 +1148,7 @@
       }
     });
 
+    // helper: click map to get coordinate
     document.getElementById('campusMap').addEventListener('click', function(e){
       const rect = this.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(2);
