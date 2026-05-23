@@ -512,20 +512,6 @@
     </div>
   </div>
 
-  <div id="translateSuggest" class="prompt">
-    <div class="prompt-card">
-      <h4>Need this page in your language?</h4>
-      <p style="margin:0 0 10px 0; color:#475569; font-size:13px;">
-        This page is in English. You can use your browser's Translate feature.
-      </p>
-      <div class="prompt-actions">
-        <button id="showTranslateStepsBtn" class="btn">How to translate</button>
-        <button id="dismissTranslateSuggestBtn" class="btn">Not now</button>
-      </div>
-      <button id="dontShowTranslateSuggestBtn" class="btn prompt-cancel">Don't show again</button>
-    </div>
-  </div>
-
   <script>
     // ---------------- DATA ----------------
     const restaurants = [
@@ -663,10 +649,6 @@
 
     const stationPrompt = document.getElementById('stationPrompt');
     const cancelStationPrompt = document.getElementById('cancelStationPrompt');
-    const translateSuggest = document.getElementById('translateSuggest');
-    const showTranslateStepsBtn = document.getElementById('showTranslateStepsBtn');
-    const dismissTranslateSuggestBtn = document.getElementById('dismissTranslateSuggestBtn');
-    const dontShowTranslateSuggestBtn = document.getElementById('dontShowTranslateSuggestBtn');
 
 
     // NEW: route button refs
@@ -1331,15 +1313,6 @@
     cancelStationPrompt.addEventListener('click', ()=> stationPrompt.classList.remove('show'));
     showTranslateStepsBtn?.addEventListener('click', showTranslateInstructions);
 
-    dismissTranslateSuggestBtn?.addEventListener('click', () => {
-      translateSuggest.classList.remove('show');
-    });
-
-    dontShowTranslateSuggestBtn?.addEventListener('click', () => {
-    localStorage.setItem('hideTranslateSuggest', '1');
-      translateSuggest.classList.remove('show');
-    });
-
     stationPrompt.querySelectorAll('[data-station]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         stationPrompt.classList.remove('show');
@@ -1464,46 +1437,6 @@
     });
 
     // ---------------- INIT ----------------
-    function shouldSuggestBrowserTranslate(){
-      const pageLang = (document.documentElement.lang || 'en').toLowerCase();
-      const pageIsEnglish = pageLang.startsWith('en');
-
-      const langs = (navigator.languages && navigator.languages.length)
-        ? navigator.languages
-        : [navigator.language || 'en'];
-
-      const userHasEnglish = langs.some(l => String(l).toLowerCase().startsWith('en'));
-      const dontShow = localStorage.getItem('hideTranslateSuggest') === '1';
-
-      return pageIsEnglish && !userHasEnglish && !dontShow;
-  }
-
-function showTranslateInstructions(){
-  const ua = navigator.userAgent;
-  const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
-  const isChrome = /Chrome|CriOS/i.test(ua);
-
-  let msg = '';
-  if (isChrome && isMobileUA){
-    msg = 'Chrome mobile: tap ⋮ menu → Translate.';
-  } else if (isChrome){
-    msg = 'Chrome desktop: right-click page → Translate to your language.';
-  } else if (isMobileUA){
-    msg = 'Open your browser menu and look for "Translate".';
-  } else {
-    msg = 'Try right-clicking the page and selecting "Translate", or use your browser menu.';
-  }
-
-  alert(msg);
-}
-
-function initTranslateSuggestion(){
-  if (!translateSuggest) return;
-  if (shouldSuggestBrowserTranslate()){
-    setTimeout(() => translateSuggest.classList.add('show'), 700);
-  }
-}
-
     const mobileTabs = document.querySelector('.mobile-tabs');
     if (isMobile() && mobileTabs && mapWrap && mapWrap.parentNode) {
       mapWrap.parentNode.insertBefore(mobileTabs, mapWrap);
@@ -1517,7 +1450,6 @@ function initTranslateSuggestion(){
     applyTransform();
     if (isMobile()) setMobileTab('map');
     updateMobileRouteUI();
-    initTranslateSuggestion();
   </script>
 </body>
 </html>
