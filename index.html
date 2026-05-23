@@ -260,6 +260,18 @@
       z-index:75;
       font-size:13px;
     }
+      
+      @media (min-width: 769px){
+        body.route-mode #routeHint{
+          left: 24px;
+          right: 24px;
+          top: 16px;
+          padding: 24px 28px;
+          font-size: 24px;
+          line-height: 1.45;
+          border-radius: 12px;
+        }
+      }
 
     .list-card{
       background:var(--card);
@@ -364,7 +376,36 @@
       width:100%;
       margin-top:4px;
     }
+    
+    /* ===== Route mode: hide list panel completely (desktop + mobile) ===== */
+    body.route-mode .content{
+      grid-template-columns: 1fr;
+    }
+    body.route-mode #listPanel{
+      display: none !important;
+    }
 
+    /* ===== Desktop list scroll behavior ===== */
+    @media (min-width: 769px){
+      .list-card{
+        max-height: calc(100vh - 140px);
+        min-height: 0;
+      }
+
+      .list{
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+
+      /* Optional: keep list header visible while scrolling */
+      .list-head{
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--card);
+      }
+    }
+    
     @media (max-width: 768px){
       .content{
         display:block;
@@ -529,8 +570,8 @@
       {id:13,name:"OORI HANSIK",building:"Composite Building",location:"G/F",type:"asian",icon:"🍜",food:"Korean food and snacks",walkMin:7,x:68.29,y:47.91},
       {id:14,name:"Oliver’s Super Sandwiches",building:"The Jockey Club Tower, Centennial Campus",location:"LG/F",type:"western",icon:"🥪",food:"Sandwiches, pasta, salad and coffee",walkMin:10,x:82.55,y:49.95},
       {id:15,name:"alfafa café",building:"The Jockey Club Tower, Centennial Campus",location:"G/F",type:"cafe",icon:"☕",food:"Pasta, sandwiches, salads and coffee",walkMin:10,x:83.01,y:50.40},
-      {id:16,name:"Gourmet Asia",building:"Run Run Shaw Tower, Centennial Campus",location:"G/F",type:"asian",icon:"🍜",food:"Southeast Asia cuisine",walkMin:13,x:81.20,y:60.60},
-      {id:17,name:"BIJAS Vegetarian",building:"Run Run Shaw Tower, Centennial Campus",location:"G/F",type:"vegetarian",icon:"🥗",food:"Vegetarian food (Chinese cuisine)",walkMin:13,x:81.68,y:61.01},
+      {id:16,name:"Gourmet Asia",building:"Run Run Shaw Tower, Centennial Campus",location:"G/F",type:"asian",icon:"🍜",food:"Southeast Asia cuisine",walkMin:13,x:88.20,y:60.60},
+      {id:17,name:"BIJAS Vegetarian",building:"Run Run Shaw Tower, Centennial Campus",location:"G/F",type:"vegetarian",icon:"🥗",food:"Vegetarian food (Chinese cuisine)",walkMin:13,x:88.68,y:61.01},
       {id:18,name:"The Good Bridge (Staff Only)",building:"Jockey Club Tower, Centennial Campus",location:"4/F",type:"western",icon:"🍽️",food:"Western and Chinese food",walkMin:10,x:83.01,y:50.40,access:"Staff Only"},
       {id:19,name:"Senior Common Room (SCR Club Members Only)",building:"KKL Building",location:"14-15/F",type:"western",icon:"🍽️",food:"Western and Chinese food",walkMin:1,x:24.04,y:53.71,access:"SCR Club Members Only"}
     ];
@@ -1393,6 +1434,8 @@
     // ---------------- MODE ----------------
     function switchMode(mode){
       currentMode = mode;
+      document.body.classList.toggle('route-mode', mode === 'route'); // <-- added
+
       selectedTypes = null;
       clearRoute();
       popup.style.display = 'none';
