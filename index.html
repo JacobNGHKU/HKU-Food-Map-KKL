@@ -650,7 +650,6 @@
     const stationPrompt = document.getElementById('stationPrompt');
     const cancelStationPrompt = document.getElementById('cancelStationPrompt');
 
-
     // NEW: route button refs
     const routeButtons = document.getElementById('routeButtons');
     const routeFromSypBtn = document.getElementById('routeFromSypBtn');
@@ -1311,8 +1310,6 @@
     routeFromHkuBtn?.addEventListener('click', () => drawRouteToKKL('hkuA2'));
 
     cancelStationPrompt.addEventListener('click', ()=> stationPrompt.classList.remove('show'));
-    showTranslateStepsBtn?.addEventListener('click', showTranslateInstructions);
-
     stationPrompt.querySelectorAll('[data-station]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         stationPrompt.classList.remove('show');
