@@ -42,6 +42,7 @@
       gap:8px;
       align-items:center;
     }
+    .topbar-spacer{ flex:1 1 auto; }
     .btn{
       border:1px solid var(--line);
       background:#fff;
@@ -122,7 +123,6 @@
       margin:0;
     }
 
-    /* NEW: route buttons above map */
     .route-buttons{
       display:none;
       gap:8px;
@@ -165,7 +165,7 @@
       inset:0;
       width:100%;
       height:100%;
-      pointer-events:none; /* so markers stay clickable */
+      pointer-events:none;
       overflow:visible;
       z-index:20;
     }
@@ -303,7 +303,7 @@
     .i1{font-size:13px; font-weight:600}
     .i2{font-size:12px; color:#475569; margin-top:2px}
     .i3{font-size:12px; color:#1d4ed8; margin-top:3px}
-    
+
     .walk-badge{
       display:inline-flex;
       align-items:center;
@@ -316,25 +316,22 @@
       border:1px solid transparent;
       vertical-align:middle;
     }
-
     .walk-green{
       background:#dcfce7;
       color:#166534;
       border-color:#86efac;
     }
-
     .walk-amber{
       background:#fef3c7;
       color:#92400e;
       border-color:#fcd34d;
     }
-
     .walk-red{
       background:#fee2e2;
       color:#991b1b;
       border-color:#fca5a5;
     }
-    
+
     .drawer-handle{display:none}
 
     .prompt{
@@ -456,6 +453,10 @@
       <button id="visitModeBtn" class="btn">🏛️ Visit Map</button>
       <button id="routeModeBtn" class="btn">🚶 To KKL</button>
       <button id="resetZoomBtn" class="btn">Reset zoom</button>
+
+      <span class="topbar-spacer"></span>
+      <button id="langEnBtn" class="btn active">EN</button>
+      <button id="langZhBtn" class="btn">中文</button>
     </div>
 
     <div class="titlecard">
@@ -473,7 +474,6 @@
       <div class="map-card">
         <p id="mapNoteInline" class="map-note-inline">Walking time shown is from KKL Building.</p>
 
-        <!-- NEW: route selection buttons -->
         <div id="routeButtons" class="route-buttons">
           <button id="routeFromSypBtn" class="btn">🚉 From Sai Ying Pun Exit C</button>
           <button id="routeFromHkuBtn" class="btn">🚉 From HKU Exit A2</button>
@@ -481,7 +481,6 @@
 
         <div id="campusMapWrap">
           <div id="mapStage">
-            <!-- Replace with your actual file -->
             <img id="mapImage" src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU map" />
             <svg id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
           </div>
@@ -503,10 +502,10 @@
 
   <div id="stationPrompt" class="prompt">
     <div class="prompt-card">
-      <h4>Where are you coming from?</h4>
+      <h4 id="stationPromptTitle">Where are you coming from?</h4>
       <div class="prompt-actions">
-        <button class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
-        <button class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
+        <button id="stationSypBtn" class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
+        <button id="stationHkuBtn" class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
       </div>
       <button id="cancelStationPrompt" class="btn prompt-cancel">Cancel</button>
     </div>
@@ -562,31 +561,39 @@
     const DATASETS = {
       food:{
         title:"HKU Main Campus Map (Food Map)",
+        titleZh:"香港大學本部校園地圖（飲食地圖）",
         listLabel:"Restaurant List",
+        listLabelZh:"餐飲列表",
         note:"Walking time shown is from KKL Building.",
+        noteZh:"步行時間以 KKL 大樓為起點。",
         listSubNote:"Walking time shown is from KKL Building.",
+        listSubNoteZh:"步行時間以 KKL 大樓為起點。",
         items:restaurants,
         categories:[
-          {key:"canteen",label:"Canteen",icon:"🍱"},
-          {key:"cafe",label:"Cafe",icon:"☕"},
-          {key:"western",label:"Western",icon:"🥪"},
-          {key:"asian",label:"Asian",icon:"🍜"},
-          {key:"halal",label:"Halal",icon:"🕌"},
-          {key:"vegetarian",label:"Vegetarian",icon:"🥗"},
-          {key:"vending",label:"Vending",icon:"🥡"}
+          {key:"canteen",label:"Canteen",labelZh:"飯堂",icon:"🍱"},
+          {key:"cafe",label:"Cafe",labelZh:"咖啡店",icon:"☕"},
+          {key:"western",label:"Western",labelZh:"西式",icon:"🥪"},
+          {key:"asian",label:"Asian",labelZh:"亞洲菜",icon:"🍜"},
+          {key:"halal",label:"Halal",labelZh:"清真",icon:"🕌"},
+          {key:"vegetarian",label:"Vegetarian",labelZh:"素食",icon:"🥗"},
+          {key:"vending",label:"Vending",labelZh:"販賣機",icon:"🥡"}
         ]
       },
       visit:{
         title:"HKU Main Campus Map (Visit Map)",
+        titleZh:"香港大學本部校園地圖（參觀地圖）",
         listLabel:"Visiting Points",
+        listLabelZh:"參觀景點",
         note:"Explore heritage, museums, shops and photo spots.",
+        noteZh:"探索歷史建築、博物館、商店與拍照景點。",
         listSubNote:"Explore heritage, museums, shops and photo spots.",
+        listSubNoteZh:"探索歷史建築、博物館、商店與拍照景點。",
         items:visitPoints,
         categories:[
-          {key:"historical",label:"Historical Buildings",icon:"🏛️"},
-          {key:"museum",label:"Museum / Gallery",icon:"🖼️"},
-          {key:"souvenir",label:"Souvenir / Bookshop",icon:"🛍️"},
-          {key:"photo",label:"Photo Spot",icon:"📸"}
+          {key:"historical",label:"Historical Buildings",labelZh:"歷史建築",icon:"🏛️"},
+          {key:"museum",label:"Museum / Gallery",labelZh:"博物館 / 展覽館",icon:"🖼️"},
+          {key:"souvenir",label:"Souvenir / Bookshop",labelZh:"紀念品 / 書店",icon:"🛍️"},
+          {key:"photo",label:"Photo Spot",labelZh:"拍照點",icon:"📸"}
         ]
       }
     };
@@ -596,18 +603,20 @@
     const ROUTES_TO_KKL = {
       hkuA2: {
         name: "HKU Station Exit A2",
+        nameZh: "港大站 A2 出口",
         path: [
           {x:54.07,y:52.07},{x:54.31,y:50.44},{x:52.25,y:49.72},{x:53.10,y:43.55},
           {x:48.15,y:43.00},{x:47.06,y:51.53},{x:44.65,y:53.53},{x:38.37,y:54.61},
           {x:38.37,y:59.33},{x:32.93,y:57.88},{x:27.13,y:57.15},{x:24.11,y:57.52}
         ],
         milestones: [
-          { index: 6, message: "⬇️ Please take the escalator down to Sun Yat-sen Place." },
-          { index: 8, message: "➡️ Walk toward the Knowles Building. After you pass Knowles, you will see the KKL Building ahead." }
+          { index: 6, message: { en:"⬇️ Please take the escalator down to Sun Yat-sen Place.", zh:"⬇️ 請乘扶手電梯前往孫中山廣場。" } },
+          { index: 8, message: { en:"➡️ Walk toward the Knowles Building. After you pass Knowles, you will see the KKL Building ahead.", zh:"➡️ 向鈕魯詩樓方向前進，經過後便會看見前方的 KKL 大樓。" } }
         ]
       },
       sypC: {
         name: "Sai Ying Pun Station Exit C",
+        nameZh: "西營盤站 C 出口",
         path: [
           {x:4.43,y:79.20},{x:6.81,y:78.75},{x:8.53,y:77.29},{x:9.26,y:72.94},
           {x:11.43,y:71.85},{x:11.92,y:74.39},{x:13.85,y:77.84},{x:18.68,y:80.02},
@@ -615,11 +624,104 @@
           {x:27.01,y:69.49},{x:28.46,y:57.52},{x:25.99,y:57.52}
         ],
         milestones:[
-          {index:10,message:"🛗 Please take the elevator here."},
-          {index:12,message:"⬅️ Turn left — KKL Building will be right ahead."}
+          {index:10,message:{ en:"🛗 Please take the elevator here.", zh:"🛗 請在此乘搭升降機。" }},
+          {index:12,message:{ en:"⬅️ Turn left — KKL Building will be right ahead.", zh:"⬅️ 向左轉，KKL 大樓就在前方。" }}
         ]
       }
     };
+
+    // ---------------- I18N ----------------
+    let currentLang = 'en';
+
+    const UI = {
+      en: {
+        foodBtn: "🍱 Food Map",
+        visitBtn: "🏛️ Visit Map",
+        routeBtn: "🚶 To KKL",
+        resetZoom: "Reset zoom",
+        mapTab: "🗺️ Map",
+        listTab: "📋 List",
+        all: "All",
+        fromKKL: "from KKL",
+        routeFromSyp: "🚉 From Sai Ying Pun Exit C",
+        routeFromHku: "🚉 From HKU Exit A2",
+        routeTitle: "HKU Main Campus Map (Route to KKL)",
+        routeNote: "Tap a station icon or button to view walking route.",
+        routePickHint: "Tap a station icon 🚉 or route button to view route to KKL 📍",
+        routeFollowPrefix: "From",
+        routeFollowSuffix: "follow the blue line to KKL 📍",
+        arrived: "✅ You have arrived at KKL Building.",
+        drawerHandle: "Swipe / tap to open list",
+        promptTitle: "Where are you coming from?",
+        promptSyp: "🚉 Sai Ying Pun Station Exit C",
+        promptHku: "🚉 HKU Station Exit A2",
+        cancel: "Cancel",
+        building: "Building",
+        location: "Location",
+        type: "Type",
+        category: "Category",
+        walkFromKKLLabel: "Walk from KKL",
+        food: "Food",
+        access: "Access",
+        openingHours: "Opening hours",
+        kklBuilding: "📍 KKL Building",
+        youAreHere: "You are here.",
+        more: "More"
+      },
+      zh: {
+        foodBtn: "🍱 飲食地圖",
+        visitBtn: "🏛️ 參觀地圖",
+        routeBtn: "🚶 前往 KKL",
+        resetZoom: "重設縮放",
+        mapTab: "🗺️ 地圖",
+        listTab: "📋 列表",
+        all: "全部",
+        fromKKL: "由 KKL 出發",
+        routeFromSyp: "🚉 由西營盤站 C 出口",
+        routeFromHku: "🚉 由港大站 A2 出口",
+        routeTitle: "香港大學本部校園地圖（前往 KKL 路線）",
+        routeNote: "點擊車站圖示或按鈕以查看步行路線。",
+        routePickHint: "點擊車站圖示 🚉 或路線按鈕以查看前往 KKL 📍 的路線",
+        routeFollowPrefix: "由",
+        routeFollowSuffix: "出發：沿藍線前往 KKL 📍",
+        arrived: "✅ 你已到達 KKL 大樓。",
+        drawerHandle: "向上滑 / 點擊以開啟列表",
+        promptTitle: "你從哪裡出發？",
+        promptSyp: "🚉 西營盤站 C 出口",
+        promptHku: "🚉 港大站 A2 出口",
+        cancel: "取消",
+        building: "大樓",
+        location: "位置",
+        type: "類型",
+        category: "分類",
+        walkFromKKLLabel: "由 KKL 步行",
+        food: "餐飲",
+        access: "使用限制",
+        openingHours: "開放時間",
+        kklBuilding: "📍 KKL 大樓",
+        youAreHere: "你在這裡。",
+        more: "更多"
+      }
+    };
+
+    function t(key){
+      return UI[currentLang][key] ?? key;
+    }
+
+    function dsText(ds, key){
+      const zhKey = key + 'Zh';
+      return (currentLang === 'zh' && ds[zhKey]) ? ds[zhKey] : ds[key];
+    }
+
+    function routeName(route){
+      return currentLang === 'zh' ? (route.nameZh || route.name) : route.name;
+    }
+
+    function i18nMessage(msg){
+      if (!msg) return '';
+      if (typeof msg === 'string') return msg;
+      return currentLang === 'zh' ? (msg.zh || msg.en || '') : (msg.en || msg.zh || '');
+    }
 
     // ---------------- ELEMENTS ----------------
     const mapStage = document.getElementById('mapStage');
@@ -642,15 +744,20 @@
     const routeModeBtn = document.getElementById('routeModeBtn');
     const resetZoomBtn = document.getElementById('resetZoomBtn');
 
+    const langEnBtn = document.getElementById('langEnBtn');
+    const langZhBtn = document.getElementById('langZhBtn');
+
     const listPanel = document.getElementById('listPanel');
     const mapTabBtn = document.getElementById('mapTabBtn');
     const listTabBtn = document.getElementById('listTabBtn');
     const drawerHandle = document.getElementById('drawerHandle');
 
     const stationPrompt = document.getElementById('stationPrompt');
+    const stationPromptTitle = document.getElementById('stationPromptTitle');
+    const stationSypBtn = document.getElementById('stationSypBtn');
+    const stationHkuBtn = document.getElementById('stationHkuBtn');
     const cancelStationPrompt = document.getElementById('cancelStationPrompt');
 
-    // NEW: route button refs
     const routeButtons = document.getElementById('routeButtons');
     const routeFromSypBtn = document.getElementById('routeFromSypBtn');
     const routeFromHkuBtn = document.getElementById('routeFromHkuBtn');
@@ -739,17 +846,18 @@
     }
 
     function walkTimeHTML(min){
-        let cls = 'walk-green';              // <= 5
-        if (min >= 6 && min <= 10) cls = 'walk-amber';   // 6–9
-        else if (min > 10) cls = 'walk-red';            // >10
+      let cls = 'walk-green';
+      if (min >= 6 && min <= 10) cls = 'walk-amber';
+      else if (min > 10) cls = 'walk-red';
+      return `<span class="walk-badge ${cls}">🚶 ${min} min</span>`;
+    }
 
-  return `<span class="walk-badge ${cls}">🚶 ${min} min</span>`;
-}
     function getActiveData(){ return currentMode === 'visit' ? DATASETS.visit : DATASETS.food; }
 
     function catLabel(type){
       const c = getActiveData().categories.find(x => x.key === type);
-      return c ? c.label : type;
+      if (!c) return type;
+      return (currentLang === 'zh' && c.labelZh) ? c.labelZh : c.label;
     }
 
     function clearActive(){
@@ -772,33 +880,33 @@
     function popupMoreBtnHTML(expanded){
       if (!isMobile()) return '';
       if (expanded) return '';
-      return `<div class="more-wrap"><button class="more-btn" data-popup-more="1">More</button></div>`;
+      return `<div class="more-wrap"><button class="more-btn" data-popup-more="1">${t('more')}</button></div>`;
     }
 
     function popupHTML(p, expanded){
       if (currentMode === 'food'){
         const rows = [
-          `<div class="row"><b>Building:</b> ${p.building}</div>`,
-          `<div class="row"><b>Location:</b> ${p.location}</div>`,
-          `<div class="row"><b>Type:</b> ${catLabel(p.type)}</div>`,
-          `<div class="row"><b>Walk from KKL:</b> ${walkTimeHTML(p.walkMin)}</div>`
+          `<div class="row"><b>${t('building')}:</b> ${p.building}</div>`,
+          `<div class="row"><b>${t('location')}:</b> ${p.location}</div>`,
+          `<div class="row"><b>${t('type')}:</b> ${catLabel(p.type)}</div>`,
+          `<div class="row"><b>${t('walkFromKKLLabel')}:</b> ${walkTimeHTML(p.walkMin)}</div>`
         ];
         if (expanded){
-          rows.splice(3, 0, `<div class="row"><b>Food:</b> ${p.food}</div>`);
-          if (p.access) rows.push(`<div class="row"><b>Access:</b> ${p.access}</div>`);
+          rows.splice(3, 0, `<div class="row"><b>${t('food')}:</b> ${p.food}</div>`);
+          if (p.access) rows.push(`<div class="row"><b>${t('access')}:</b> ${p.access}</div>`);
         }
         return `${popupHeader(`${p.icon} ${p.id}. ${p.name}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
       }
 
       const rows = [
-        `<div class="row"><b>Category:</b> ${catLabel(p.type)}</div>`,
-        p.building ? `<div class="row"><b>Building:</b> ${p.building}</div>` : '',
-        p.location ? `<div class="row"><b>Location:</b> ${p.location}</div>` : '',
-        p.walkMin ? `<div class="row"><b>Walk from KKL:</b> ${walkTimeHTML(p.walkMin)}</div>` : ''
+        `<div class="row"><b>${t('category')}:</b> ${catLabel(p.type)}</div>`,
+        p.building ? `<div class="row"><b>${t('building')}:</b> ${p.building}</div>` : '',
+        p.location ? `<div class="row"><b>${t('location')}:</b> ${p.location}</div>` : '',
+        p.walkMin ? `<div class="row"><b>${t('walkFromKKLLabel')}:</b> ${walkTimeHTML(p.walkMin)}</div>` : ''
       ].filter(Boolean);
 
       if (expanded){
-        if (p.hours) rows.push(`<div class="row"><b>Opening hours:</b> ${p.hours}</div>`);
+        if (p.hours) rows.push(`<div class="row"><b>${t('openingHours')}:</b> ${p.hours}</div>`);
         if (p.info) rows.push(`<div class="row">${p.info}</div>`);
       }
 
@@ -876,9 +984,7 @@
       m.title = p.name;
       m.dataset.type = p.type;
 
-      // Prevent map drag from starting when clicking marker
       m.addEventListener('pointerdown', e => e.stopPropagation());
-
       m.addEventListener('click', e => {
         e.stopPropagation();
         focusPoint(p);
@@ -896,11 +1002,9 @@
       h.style.top = HERE.y + '%';
       h.style.zIndex = '60';
       h.innerHTML = '📍';
-      h.title = "I'm here (KKL)";
+      h.title = t('kklBuilding');
 
-      // Prevent map drag from starting when clicking marker
       h.addEventListener('pointerdown', e => e.stopPropagation());
-
       h.addEventListener('click', e => {
         e.stopPropagation();
         clearActive();
@@ -908,7 +1012,7 @@
         currentPopupPoint = null;
         popupExpanded = false;
         zoomToPoint(HERE.x, HERE.y, isMobile()?1.22:1.42);
-        openPopup(h, `${popupHeader('📍 KKL Building')}<div class="row">You are here.</div>`);
+        openPopup(h, `${popupHeader(t('kklBuilding'))}<div class="row">${t('youAreHere')}</div>`);
       });
       mapStage.appendChild(h);
       hereMarkerEl = h;
@@ -925,7 +1029,7 @@
         b.innerHTML = `
           <div class="i1">${p.icon} ${p.id}. ${p.name}</div>
           <div class="i2">${catLabel(p.type)} ${p.building ? `• ${p.location ? p.location + ', ' : ''}${p.building}` : ''}</div>
-          <div class="i3">${p.walkMin ? walkTimeHTML(p.walkMin)+' from KKL' : ''}</div>
+          <div class="i3">${p.walkMin ? walkTimeHTML(p.walkMin) + ' ' + t('fromKKL') : ''}</div>
         `;
         b.addEventListener('click', () => focusPoint(p));
         li.appendChild(b);
@@ -941,26 +1045,26 @@
 
       const allChip = document.createElement('button');
       allChip.className = 'chip active';
-      allChip.textContent = 'All';
+      allChip.textContent = t('all');
       allChip.dataset.type = 'all';
       filterBar.appendChild(allChip);
 
       data.categories.forEach(c => {
         const chip = document.createElement('button');
         chip.className = 'chip';
-        chip.textContent = `${c.icon} ${c.label}`;
+        chip.textContent = `${c.icon} ${currentLang === 'zh' ? (c.labelZh || c.label) : c.label}`;
         chip.dataset.type = c.key;
         filterBar.appendChild(chip);
       });
 
       filterBar.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', () => {
-          const t = chip.dataset.type;
-          if (t === 'all'){
+          const ttype = chip.dataset.type;
+          if (ttype === 'all'){
             selectedTypes = null;
           } else {
             if (!selectedTypes) selectedTypes = new Set();
-            if (selectedTypes.has(t)) selectedTypes.delete(t); else selectedTypes.add(t);
+            if (selectedTypes.has(ttype)) selectedTypes.delete(ttype); else selectedTypes.add(ttype);
             if (selectedTypes.size === 0) selectedTypes = null;
           }
           paintFilterState();
@@ -977,8 +1081,8 @@
       if (!selectedTypes || selectedTypes.size === 0){
         all && all.classList.add('active');
       } else {
-        selectedTypes.forEach(t => {
-          const chip = filterBar.querySelector(`[data-type="${t}"]`);
+        selectedTypes.forEach(ttype => {
+          const chip = filterBar.querySelector(`[data-type="${ttype}"]`);
           chip && chip.classList.add('active');
         });
       }
@@ -991,8 +1095,7 @@
 
       data.items.forEach(p => {
         const show = !selectedTypes || selectedTypes.has(p.type);
-        const marker = markerById
-      .get(p.id);
+        const marker = markerById.get(p.id);
         const btn = listBtnById.get(p.id);
 
         if (marker) marker.style.display = show ? 'flex' : 'none';
@@ -1028,7 +1131,7 @@
         m.style.top = `${start.y}%`;
         m.style.zIndex = '28';
         m.innerHTML = '🚉';
-        m.title = `${route.name} (tap for route)`;
+        m.title = `${routeName(route)} (tap for route)`;
 
         m.addEventListener('pointerdown', e => e.stopPropagation());
         m.addEventListener('click', (e) => {
@@ -1065,11 +1168,11 @@
       let i=1;
       while(i<cum.length && cum[i]<d) i++;
       const d0=cum[i-1], d1=cum[i];
-      const t=(d-d0)/(d1-d0);
+      const tt=(d-d0)/(d1-d0);
 
       return {
-        x: path[i-1].x + (path[i].x - path[i-1].x) * t,
-        y: path[i-1].y + (path[i].y - path[i-1].y) * t
+        x: path[i-1].x + (path[i].x - path[i-1].x) * tt,
+        y: path[i-1].y + (path[i].y - path[i-1].y) * tt
       };
     }
 
@@ -1094,11 +1197,9 @@
       popupExpanded = false;
       clearActive();
 
-      // highlight selected station icon among always-visible station markers
       routeStartMarkerByKey.forEach(el => el.classList.remove('active'));
       routeStartMarkerByKey.get(stationKey)?.classList.add('active');
 
-      // highlight selected route button
       routeFromSypBtn?.classList.toggle('active', stationKey === 'sypC');
       routeFromHkuBtn?.classList.toggle('active', stationKey === 'hkuA2');
 
@@ -1143,7 +1244,7 @@
       });
       mapStage.appendChild(walkerEl);
 
-      showRouteHint(`From ${route.name}: follow the blue line to KKL 📍`);
+      showRouteHint(`${t('routeFollowPrefix')} ${routeName(route)}: ${t('routeFollowSuffix')}`);
 
       const xs = route.path.map(p => p.x);
       const ys = route.path.map(p => p.y);
@@ -1157,15 +1258,15 @@
       const milestones = (route.milestones || []).map(m => ({
         d: cum[m.index],
         shown: false,
-        message: m.message
+        message: i18nMessage(m.message)
       }));
 
       const duration = 11000;
       const t0 = performance.now();
 
       function frame(now){
-        const t = Math.min((now - t0) / duration, 1);
-        const d = total * t;
+        const prog = Math.min((now - t0) / duration, 1);
+        const d = total * prog;
         const pt = pointAt(route.path, cum, d);
 
         walkerEl.style.left = `${pt.x}%`;
@@ -1178,11 +1279,11 @@
           }
         });
 
-        if (t < 1){
+        if (prog < 1){
           routeAnimId = requestAnimationFrame(frame);
         } else {
           routeAnimId = null;
-          showRouteHint('✅ You have arrived at KKL Building.');
+          showRouteHint(t('arrived'));
 
           if (isMobile() && currentMode === 'route'){
             if (routeFsExitTimer) clearTimeout(routeFsExitTimer);
@@ -1217,6 +1318,41 @@
       }
     }
 
+    // ---------------- LANGUAGE ----------------
+    function applyStaticUIText(){
+      foodModeBtn.textContent = t('foodBtn');
+      visitModeBtn.textContent = t('visitBtn');
+      routeModeBtn.textContent = t('routeBtn');
+      resetZoomBtn.textContent = t('resetZoom');
+      mapTabBtn.textContent = t('mapTab');
+      listTabBtn.textContent = t('listTab');
+      routeFromSypBtn.textContent = t('routeFromSyp');
+      routeFromHkuBtn.textContent = t('routeFromHku');
+      drawerHandle.textContent = t('drawerHandle');
+
+      stationPromptTitle.textContent = t('promptTitle');
+      stationSypBtn.textContent = t('promptSyp');
+      stationHkuBtn.textContent = t('promptHku');
+      cancelStationPrompt.textContent = t('cancel');
+
+      langEnBtn.classList.toggle('active', currentLang === 'en');
+      langZhBtn.classList.toggle('active', currentLang === 'zh');
+    }
+
+    function setLanguage(lang){
+      currentLang = lang;
+      applyStaticUIText();
+      switchMode(currentMode);
+
+      if (currentMode === 'route' && lastRouteStationKey){
+        drawRouteToKKL(lastRouteStationKey);
+      }
+
+      if (hereMarkerEl){
+        hereMarkerEl.title = t('kklBuilding');
+      }
+    }
+
     // ---------------- MODE ----------------
     function switchMode(mode){
       currentMode = mode;
@@ -1233,28 +1369,27 @@
       routeModeBtn.classList.toggle('active', mode==='route');
 
       if (mode === 'route'){
-        mapTitle.textContent = 'HKU Main Campus Map (Route to KKL)';
-        mapNote.textContent = 'Tap a station icon or button to view walking route.';
-        mapNoteInline.textContent = mapNote.textContent;
+        mapTitle.textContent = t('routeTitle');
+        mapNote.textContent = t('routeNote');
+        mapNoteInline.textContent = t('routeNote');
 
         routeButtons?.classList.add('show');
 
         removePoiMarkers();
-        createRouteStartMarkers(); // keep both stations visible
+        createRouteStartMarkers();
         list.innerHTML = '';
         listCount.textContent = '0';
         filterBar.innerHTML = '';
 
         resetView();
         stationPrompt.classList.remove('show');
-        showRouteHint('Tap a station icon 🚉 or route button to view route to KKL 📍');
+        showRouteHint(t('routePickHint'));
 
         if (isMobile()) setMobileTab('map');
         updateMobileRouteUI();
         return;
       }
 
-      // leaving route mode
       routeButtons?.classList.remove('show');
       routeFromSypBtn?.classList.remove('active');
       routeFromHkuBtn?.classList.remove('active');
@@ -1263,11 +1398,11 @@
       stationPrompt.classList.remove('show');
 
       const data = getActiveData();
-      mapTitle.textContent = data.title;
-      mapNote.textContent = data.note;
-      mapNoteInline.textContent = data.note;
-      listLabel.textContent = data.listLabel;
-      listSubNote.textContent = data.listSubNote || '';
+      mapTitle.textContent = dsText(data, 'title');
+      mapNote.textContent = dsText(data, 'note');
+      mapNoteInline.textContent = dsText(data, 'note');
+      listLabel.textContent = dsText(data, 'listLabel');
+      listSubNote.textContent = dsText(data, 'listSubNote') || '';
 
       removePoiMarkers();
       data.items.forEach(createMarker);
@@ -1305,7 +1440,9 @@
     visitModeBtn.addEventListener('click', ()=>switchMode('visit'));
     routeModeBtn.addEventListener('click', ()=>switchMode('route'));
 
-    // NEW: route buttons above map
+    langEnBtn.addEventListener('click', ()=> setLanguage('en'));
+    langZhBtn.addEventListener('click', ()=> setLanguage('zh'));
+
     routeFromSypBtn?.addEventListener('click', () => drawRouteToKKL('sypC'));
     routeFromHkuBtn?.addEventListener('click', () => drawRouteToKKL('hkuA2'));
 
@@ -1317,7 +1454,6 @@
       });
     });
 
-    // Popup buttons: close + more
     popup.addEventListener('click', (e)=>{
       const closeBtn = e.target.closest('[data-popup-close="1"]');
       if (closeBtn){
@@ -1363,7 +1499,6 @@
       zoomAt(e.clientX, e.clientY, scale + delta);
     }, {passive:false});
 
-    // pointer pan + touch pinch
     let dragging = false;
     let lastX = 0, lastY = 0;
     let pinchStartDist = 0;
@@ -1443,6 +1578,7 @@
     else mapImage.addEventListener('load', syncMapRatioFromImage);
 
     createHereMarker();
+    setLanguage('en');
     switchMode('food');
     applyTransform();
     if (isMobile()) setMobileTab('map');
