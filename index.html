@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,121 +6,111 @@
   <title>HKU Campus Map</title>
   <style>
     :root{
-      --bg:#f6f8fc;
+      --bg:#f8fafc;
       --card:#ffffff;
-      --line:#e5e7eb;
       --text:#0f172a;
       --muted:#64748b;
+      --line:#e2e8f0;
       --blue:#2563eb;
-      --blue2:#1d4ed8;
-      --chip:#f1f5f9;
       --map-ratio: 1.6;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
     }
-    .app{
-      max-width:1200px;
-      margin:0 auto;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
 
     .topbar{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:#fff;
+      border-bottom:1px solid var(--line);
       padding:10px;
       display:flex;
       flex-wrap:wrap;
       gap:8px;
       align-items:center;
+      justify-content:space-between;
     }
-    .topbar-spacer{ flex:1 1 auto; }
-    .btn{
+    .left-controls,.right-controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    button{
       border:1px solid var(--line);
       background:#fff;
       color:var(--text);
       border-radius:10px;
       padding:8px 10px;
+      cursor:pointer;
       font-size:14px;
-      cursor:pointer;
     }
-    .btn:hover{border-color:#cbd5e1}
-    .btn.active{
-      background:var(--blue);
-      color:#fff;
-      border-color:var(--blue2);
-    }
-
-    .titlecard{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-    }
-    #mapTitle{margin:0 0 3px 0; font-size:18px}
-    #mapNote{margin:0; color:var(--muted); font-size:13px}
-
-    #filterBar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:10px;
-    }
-    .chip{
-      border:1px solid #dbe2ea;
-      background:var(--chip);
-      color:#0f172a;
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:12px;
-      cursor:pointer;
-    }
-    .chip.active{
-      background:#dbeafe;
+    button.active{
+      background:#eff6ff;
       border-color:#93c5fd;
       color:#1d4ed8;
+      font-weight:600;
     }
 
-    .mobile-tabs{
-      display:none;
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:8px;
-      gap:8px;
-    }
-    .mobile-tabs .btn{flex:1}
-
-    .content{
+    .layout{
       display:grid;
-      grid-template-columns: 1fr 320px;
-      gap:10px;
-      min-height:560px;
+      grid-template-columns:minmax(0,1fr) 360px;
+      gap:12px;
+      padding:12px;
+      height:calc(100vh - 72px);
     }
 
-    .map-card{
+    .map-panel,.list-panel{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px;
-      position:relative;
-      overflow:hidden;
+      border-radius:14px;
+      min-height:0;
+    }
+
+    .map-panel{
       display:flex;
       flex-direction:column;
-      gap:8px;
+      overflow:hidden;
+      position:relative;
     }
-    .map-note-inline{
+
+    .map-header{
+      padding:12px 12px 8px;
+      border-bottom:1px solid var(--line);
+    }
+    .map-title{
+      font-weight:700;
+      font-size:16px;
+      margin-bottom:4px;
+    }
+    .map-note{
       color:var(--muted);
-      font-size:12px;
-      margin:0;
+      font-size:13px;
+    }
+
+    .mode-tools{
+      padding:8px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    #filterBar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
     }
 
     .route-buttons{
@@ -128,33 +118,41 @@
       gap:8px;
       flex-wrap:wrap;
     }
-    .route-buttons.show{
-      display:flex;
-    }
-    .route-buttons .btn{
-      font-size:13px;
+    .route-buttons.show{display:flex}
+
+    .map-shell{
+      position:relative;
+      padding:10px;
+      min-height:0;
+      flex:1 1 auto;
     }
 
     #campusMapWrap{
       position:relative;
       width:100%;
-      aspect-ratio: var(--map-ratio);
-      border-radius:10px;
+      aspect-ratio:var(--map-ratio);
+      max-height:100%;
+      margin:0 auto;
+      border:1px solid var(--line);
+      border-radius:12px;
       overflow:hidden;
-      background:#e2e8f0;
+      background:#fff;
       touch-action:none;
     }
+
     #mapStage{
       position:absolute;
       inset:0;
       transform-origin:0 0;
       will-change:transform;
     }
+
     #mapImage{
+      position:absolute;
+      inset:0;
       width:100%;
       height:100%;
       object-fit:contain;
-      display:block;
       user-select:none;
       -webkit-user-drag:none;
       pointer-events:none;
@@ -165,349 +163,317 @@
       inset:0;
       width:100%;
       height:100%;
+      viewBox:0 0 100 100;
+      preserveAspectRatio:none;
       pointer-events:none;
-      overflow:visible;
-      z-index:20;
     }
 
     .marker{
       position:absolute;
-      transform:translate(-50%, -50%);
-      width:30px;
-      height:30px;
-      border:none;
+      transform:translate(-50%,-100%);
+      width:34px;
+      height:34px;
       border-radius:999px;
+      border:1px solid #cbd5e1;
+      background:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      background:#fff;
-      box-shadow:0 2px 8px rgba(15,23,42,.2);
-      cursor:pointer;
-      font-size:16px;
-      z-index:25;
-    }
-    .marker.poi{background:#fff}
-    .marker.walker{background:#fef3c7}
-    .marker.here{
-      background:#fee2e2;
-      z-index:60 !important;
-      pointer-events:auto;
+      font-size:18px;
+      box-shadow:0 4px 10px rgba(2,6,23,.12);
+      z-index:20;
+      padding:0;
     }
     .marker.active{
-      outline:2px solid #2563eb;
-      transform:translate(-50%, -50%) scale(1.08);
+      outline:2px solid #60a5fa;
+      outline-offset:2px;
+    }
+    .marker.here{
+      background:#fef2f2;
+      border-color:#fca5a5;
+    }
+    .marker.walker{
+      background:#eff6ff;
+      border-color:#93c5fd;
+      z-index:29;
     }
 
     #popup{
       position:absolute;
       display:none;
-      min-width:220px;
-      max-width:300px;
-      background:#fff;
-      border:1px solid #dbe2ea;
-      border-radius:10px;
-      box-shadow:0 10px 28px rgba(0,0,0,.15);
-      padding:10px;
       z-index:70;
-      font-size:13px;
-      line-height:1.35;
+      width:min(320px,90vw);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:0 12px 24px rgba(2,6,23,.18);
+      padding:10px;
+      font-size:14px;
+      line-height:1.4;
+      max-height:70%;
+      overflow:auto;
     }
-    #popup .row{margin:4px 0}
     .popup-head{
       display:flex;
-      align-items:center;
       justify-content:space-between;
+      align-items:center;
       gap:8px;
-      margin-bottom:4px;
-    }
-    .popup-head h4{
-      margin:0;
-      font-size:14px;
-      line-height:1.2;
+      font-weight:700;
+      margin-bottom:8px;
     }
     .popup-close{
-      border:1px solid #d1d5db;
-      background:#fff;
-      border-radius:8px;
-      width:28px;
-      height:28px;
+      border:none;
+      background:transparent;
+      font-size:18px;
       line-height:1;
-      font-size:16px;
-      cursor:pointer;
-      flex:0 0 auto;
+      padding:0 4px;
+      display:none;
     }
-    .more-wrap{margin-top:8px}
-    .more-btn{
-      border:1px solid #bfdbfe;
-      background:#eff6ff;
-      color:#1d4ed8;
-      border-radius:8px;
-      padding:6px 9px;
-      font-size:12px;
-      cursor:pointer;
+    .popup-row{margin:4px 0;color:#1e293b}
+    .popup-more{
+      margin-top:8px;
+      width:100%;
     }
 
     #routeHint{
       position:absolute;
-      left:10px;
-      right:10px;
-      top:10px;
-      display:none;
-      background:#111827d9;
+      left:20px;
+      bottom:20px;
+      z-index:50;
+      background:rgba(15,23,42,.9);
       color:#fff;
-      padding:8px 10px;
-      border-radius:8px;
-      z-index:75;
+      padding:9px 12px;
+      border-radius:10px;
       font-size:13px;
+      display:none;
+      max-width:min(520px,90%);
     }
 
-    .list-card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      overflow:hidden;
+    .list-panel{
       display:flex;
       flex-direction:column;
       min-height:0;
+      position:relative;
     }
+
     .list-head{
       padding:12px;
       border-bottom:1px solid var(--line);
     }
-    .list-head h3{
-      margin:0;
-      font-size:16px;
+    .list-title{
+      font-weight:700;
+      margin-bottom:4px;
     }
-    .list-head p{
-      margin:5px 0 0 0;
-      color:var(--muted);
+    .list-sub{
       font-size:12px;
+      color:var(--muted);
     }
+
     .list{
       list-style:none;
       margin:0;
-      padding:0;
-      overflow:auto;
+      padding:8px;
+      overflow-y:auto;
+      flex:1 1 auto;
+      min-height:0;
+      scrollbar-gutter:stable;
     }
-    .list li{border-bottom:1px solid #f1f5f9}
+    .list li{margin:0 0 8px}
     .list button{
       width:100%;
-      border:none;
-      background:#fff;
       text-align:left;
-      padding:10px 12px;
-      cursor:pointer;
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:10px;
+      padding:10px;
+      line-height:1.35;
     }
-    .list button:hover{background:#f8fafc}
-    .list button.active{background:#eff6ff}
-    .i1{font-size:13px; font-weight:600}
-    .i2{font-size:12px; color:#475569; margin-top:2px}
-    .i3{font-size:12px; color:#1d4ed8; margin-top:3px}
+    .list button.active{
+      background:#eff6ff;
+      border-color:#93c5fd;
+      color:#1e3a8a;
+    }
+    .list .n{font-weight:700}
+    .list .m{font-size:12px;color:#64748b;margin-top:4px}
+    .list .w{font-size:12px;margin-top:4px}
 
-    .walk-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:4px;
-      padding:2px 8px;
-      border-radius:999px;
+    /* Desktop scrollbar (requested) */
+    @media (min-width:769px){
+      #restaurantList::-webkit-scrollbar{width:10px}
+      #restaurantList::-webkit-scrollbar-track{background:#f1f5f9;border-radius:8px}
+      #restaurantList::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:8px}
+      #restaurantList::-webkit-scrollbar-thumb:hover{background:#64748b}
+      #restaurantList{
+        scrollbar-width:thin;
+        scrollbar-color:#94a3b8 #f1f5f9;
+      }
+    }
+
+    .mobile-tabs{
+      display:none;
+      gap:8px;
+      padding:8px 12px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+
+    .drawer-handle{
+      display:none;
+      text-align:center;
       font-size:12px;
-      font-weight:700;
-      line-height:1.2;
-      border:1px solid transparent;
-      vertical-align:middle;
-    }
-    .walk-green{
-      background:#dcfce7;
-      color:#166534;
-      border-color:#86efac;
-    }
-    .walk-amber{
-      background:#fef3c7;
-      color:#92400e;
-      border-color:#fcd34d;
-    }
-    .walk-red{
-      background:#fee2e2;
-      color:#991b1b;
-      border-color:#fca5a5;
+      color:#64748b;
+      padding:8px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+      user-select:none;
     }
 
-    .drawer-handle{display:none}
-
-    .prompt{
+    .station-prompt{
       position:fixed;
       inset:0;
       background:rgba(15,23,42,.45);
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:120;
+      z-index:200;
       padding:16px;
     }
-    .prompt.show{display:flex}
-    .prompt-card{
+    .station-prompt.show{display:flex}
+    .station-card{
+      width:min(420px,94vw);
       background:#fff;
-      border-radius:12px;
+      border-radius:14px;
       border:1px solid var(--line);
-      width:min(380px, 100%);
       padding:14px;
-    }
-    .prompt-card h4{margin:0 0 10px 0}
-    .prompt-actions{
       display:flex;
       flex-direction:column;
       gap:8px;
-      margin-bottom:10px;
     }
-    .prompt-actions .btn{text-align:left}
-    .prompt-cancel{
-      width:100%;
-      margin-top:4px;
-    }
+    .station-title{font-weight:700;margin-bottom:4px}
+    .station-card button{width:100%;text-align:left}
 
-    @media (max-width: 768px){
-      .content{
-        display:block;
-        min-height:auto;
-      }
-      .mobile-tabs{
-        display:flex;
-      }
-      .map-card{
-        min-height:0;
-      }
-      .list-card{
-        position:fixed;
-        left:10px;
-        right:10px;
-        bottom:10px;
-        max-height:58vh;
-        transform:translateY(calc(100% - 46px));
-        transition:transform .22s ease;
-        z-index:85;
-      }
-      .list-card.open{
-        transform:translateY(0);
-      }
-      .drawer-handle{
-        display:block;
-        text-align:center;
-        font-size:13px;
-        color:#475569;
+    @media (max-width:768px){
+      .topbar{padding:8px}
+      .layout{
+        grid-template-columns:1fr;
+        height:calc(100vh - 66px);
         padding:8px;
-        border-bottom:1px solid var(--line);
-        cursor:pointer;
-        user-select:none;
       }
+
+      .map-panel{min-height:0}
+      .map-shell{padding:8px}
+      #campusMapWrap{
+        width:100%;
+        height:calc(100vh - 240px);
+        max-height:none;
+        aspect-ratio:auto;
+      }
+
+      .mobile-tabs{display:flex}
+      .drawer-handle{display:block}
 
       #popup.mobile-sheet{
-        position:fixed;
-        left:10px !important;
-        right:10px !important;
-        bottom:10px !important;
+        left:8px !important;
+        right:8px;
+        bottom:8px;
         top:auto !important;
-        max-width:none;
         width:auto;
-        max-height:45vh;
-        overflow:auto;
-        border-radius:12px;
+        max-height:52vh;
+      }
+      #popup.mobile-sheet .popup-close{display:inline-block}
+
+      #listPanel{
+        position:fixed;
+        left:8px;
+        right:8px;
+        bottom:8px;
+        height:55vh;
+        border-radius:14px;
+        z-index:120;
+        transform:translateY(calc(100% - 42px));
+        transition:transform .22s ease;
+        box-shadow:0 10px 24px rgba(2,6,23,.2);
+      }
+      #listPanel.open{
+        transform:translateY(0);
       }
 
-      .route-buttons .btn{
-        flex:1 1 100%;
+      body.route-mobile #listPanel,
+      body.route-mobile .mobile-tabs{
+        display:none;
       }
 
-      body.route-mobile .list-card{display:none;}
-      body.route-mobile-fs .topbar,
-      body.route-mobile-fs .titlecard,
-      body.route-mobile-fs .mobile-tabs{
-        display:none !important;
-      }
-      body.route-mobile-fs .app{
-        max-width:none;
-        padding:0;
-      }
-      body.route-mobile-fs .content{
-        margin:0;
-      }
-      body.route-mobile-fs .map-card{
-        border-radius:0;
-        border:none;
-        padding:0;
-      }
-      body.route-mobile-fs #campusMapWrap{
-        border-radius: 0;
-        width: 100vw;
-        height: auto;
-        aspect-ratio: var(--map-ratio);
-        max-height: 100dvh;
-        margin: 0 auto;
+      body.route-mobile-fs .map-panel{
+        position:fixed;
+        inset:66px 8px 8px 8px;
+        z-index:130;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="topbar">
-      <button id="foodModeBtn" class="btn active">🍱 Food Map</button>
-      <button id="visitModeBtn" class="btn">🏛️ Visit Map</button>
-      <button id="routeModeBtn" class="btn">🚶 To KKL</button>
-      <button id="resetZoomBtn" class="btn">Reset zoom</button>
-
-      <span class="topbar-spacer"></span>
-      <button id="langEnBtn" class="btn active">EN</button>
-      <button id="langZhBtn" class="btn">中文</button>
+  <header class="topbar">
+    <div class="left-controls">
+      <button id="foodModeBtn">🍱 Food Map</button>
+      <button id="visitModeBtn">🏛️ Visit Map</button>
+      <button id="routeModeBtn">🚶 To KKL</button>
+      <button id="resetZoomBtn">Reset zoom</button>
     </div>
-
-    <div class="titlecard">
-      <h2 id="mapTitle">HKU Main Campus Map (Food Map)</h2>
-      <p id="mapNote">Walking time shown is from KKL Building.</p>
-      <div id="filterBar"></div>
+    <div class="right-controls">
+      <button id="langEnBtn" class="active">EN</button>
+      <button id="langZhBtn">中文</button>
     </div>
+  </header>
 
-    <div class="mobile-tabs">
-      <button id="mapTabBtn" class="btn active">🗺️ Map</button>
-      <button id="listTabBtn" class="btn">📋 List</button>
-    </div>
+  <main class="layout">
+    <section class="map-panel">
+      <div class="map-header">
+        <div id="mapTitle" class="map-title"></div>
+        <div id="mapNote" class="map-note"></div>
+      </div>
 
-    <div class="content">
-      <div class="map-card">
-        <p id="mapNoteInline" class="map-note-inline">Walking time shown is from KKL Building.</p>
-
+      <div class="mode-tools">
+        <div id="filterBar"></div>
         <div id="routeButtons" class="route-buttons">
-          <button id="routeFromSypBtn" class="btn">🚉 From Sai Ying Pun Exit C</button>
-          <button id="routeFromHkuBtn" class="btn">🚉 From HKU Exit A2</button>
+          <button id="routeFromSypBtn">🚉 From Sai Ying Pun Exit C</button>
+          <button id="routeFromHkuBtn">🚉 From HKU Exit A2</button>
         </div>
+      </div>
 
+      <div class="mobile-tabs">
+        <button id="mapTabBtn" class="active">🗺️ Map</button>
+        <button id="listTabBtn">📋 List</button>
+      </div>
+
+      <div class="map-shell">
         <div id="campusMapWrap">
           <div id="mapStage">
-            <img id="mapImage" src="Main-campus-Faculty-Induction-Talks-2025-scaled.jpg" alt="HKU map" />
+            <!-- Replace src with your real map image file -->
+            <img id="mapImage" src="hku-map.jpg" alt="HKU map" />
             <svg id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
           </div>
-          <div id="routeHint"></div>
           <div id="popup"></div>
+          <div id="routeHint"></div>
         </div>
       </div>
+    </section>
 
-      <aside id="listPanel" class="list-card">
-        <div id="drawerHandle" class="drawer-handle">Swipe / tap to open list</div>
-        <div class="list-head">
-          <h3><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</h3>
-          <p id="listSubNote">Walking time shown is from KKL Building.</p>
-        </div>
-        <ul id="restaurantList" class="list"></ul>
-      </aside>
-    </div>
-  </div>
-
-  <div id="stationPrompt" class="prompt">
-    <div class="prompt-card">
-      <h4 id="stationPromptTitle">Where are you coming from?</h4>
-      <div class="prompt-actions">
-        <button id="stationSypBtn" class="btn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
-        <button id="stationHkuBtn" class="btn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
+    <aside id="listPanel" class="list-panel">
+      <div id="drawerHandle" class="drawer-handle">Swipe / tap to open list</div>
+      <div class="list-head">
+        <div class="list-title"><span id="listLabel">Restaurant List</span> (<span id="listCount">0</span>)</div>
+        <div id="listSubNote" class="list-sub"></div>
       </div>
-      <button id="cancelStationPrompt" class="btn prompt-cancel">Cancel</button>
+      <ul id="restaurantList" class="list"></ul>
+    </aside>
+  </main>
+
+  <div id="stationPrompt" class="station-prompt">
+    <div class="station-card">
+      <div id="stationPromptTitle" class="station-title">Where are you coming from?</div>
+      <button id="stationSypBtn" data-station="sypC">🚉 Sai Ying Pun Station Exit C</button>
+      <button id="stationHkuBtn" data-station="hkuA2">🚉 HKU Station Exit A2</button>
+      <button id="cancelStationPrompt">Cancel</button>
     </div>
   </div>
 
@@ -707,29 +673,11 @@
       }
     };
 
-    function t(key){
-      return UI[currentLang][key] ?? key;
-    }
-
-    function dsText(ds, key){
-      const zhKey = key + 'Zh';
-      return (currentLang === 'zh' && ds[zhKey]) ? ds[zhKey] : ds[key];
-    }
-
-    function routeName(route){
-      return currentLang === 'zh' ? (route.nameZh || route.name) : route.name;
-    }
-
-    function i18nMessage(msg){
-      if (!msg) return '';
-      if (typeof msg === 'string') return msg;
-      return currentLang === 'zh' ? (msg.zh || msg.en || '') : (msg.en || msg.zh || '');
-    }
-
-    function localizedField(obj, key){
-      const zhKey = key + 'Zh';
-      return (currentLang === 'zh' && obj[zhKey]) ? obj[zhKey] : (obj[key] ?? '');
-    }
+    function t(key){ return UI[currentLang][key] ?? key; }
+    function dsText(ds, key){ const zhKey = key + 'Zh'; return (currentLang === 'zh' && ds[zhKey]) ? ds[zhKey] : ds[key]; }
+    function routeName(route){ return currentLang === 'zh' ? (route.nameZh || route.name) : route.name; }
+    function i18nMessage(msg){ if (!msg) return ''; if (typeof msg === 'string') return msg; return currentLang === 'zh' ? (msg.zh || msg.en || '') : (msg.en || msg.zh || ''); }
+    function localizedField(obj, key){ const zhKey = key + 'Zh'; return (currentLang === 'zh' && obj[zhKey]) ? obj[zhKey] : (obj[key] ?? ''); }
 
     // ---------------- ELEMENTS ----------------
     const mapStage = document.getElementById('mapStage');
@@ -743,7 +691,6 @@
     const listSubNote = document.getElementById('listSubNote');
     const mapTitle = document.getElementById('mapTitle');
     const mapNote = document.getElementById('mapNote');
-    const mapNoteInline = document.getElementById('mapNoteInline');
     const filterBar = document.getElementById('filterBar');
     const routeHint = document.getElementById('routeHint');
 
@@ -776,7 +723,6 @@
     let currentMode = 'food';
     let selectedTypes = null;
     let activeAnchorEl = null;
-
     let currentPopupPoint = null;
     let popupExpanded = false;
 
@@ -846,752 +792,787 @@
       const px = (xPct / 100) * rect.width;
       const py = (yPct / 100) * rect.height;
       const targetX = rect.width * 0.5;
-      const targetY = rect.height * 0.45;
-      tx = targetX - px * scale;
-      ty = targetY - py * scale;
-      clampPan();
-      applyTransform();
+const targetY = rect.height * 0.45;
+tx = targetX - px * scale;
+ty = targetY - py * scale;
+clampPan();
+applyTransform();
+}
+
+function walkTimeHTML(min){
+  let cls = 'walk-green';
+  if (min >= 6 && min <= 10) cls = 'walk-amber';
+  else if (min > 10) cls = 'walk-red';
+  return `<span class="${cls}">🚶 ${min} min</span>`;
+}
+
+function getActiveData(){ return currentMode === 'visit' ? DATASETS.visit : DATASETS.food; }
+
+function catLabel(type){
+  const c = getActiveData().categories.find(x => x.key === type);
+  if (!c) return type;
+  return (currentLang === 'zh' && c.labelZh) ? c.labelZh : c.label;
+}
+
+function clearActive(){
+  document.querySelectorAll('.marker.active').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.list button.active').forEach(el=>el.classList.remove('active'));
+}
+
+function popupHeader(title){
+  if (isMobile()){
+    return `<div class="popup-header">
+      <strong>${title}</strong>
+      <button class="popup-close" data-popup-close="1">✕</button>
+    </div>`;
+  }
+  return `<strong>${title}</strong>`;
+}
+
+function popupMoreBtnHTML(expanded){
+  if (!isMobile()) return '';
+  if (expanded) return '';
+  return `<button class="popup-more" data-popup-more="1">${t('more')}</button>`;
+}
+
+function popupHTML(p, expanded){
+  if (currentMode === 'food'){
+    const rows = [
+      `<div><b>${t('building')}:</b> ${p.building}</div>`,
+      `<div><b>${t('location')}:</b> ${p.location}</div>`,
+      `<div><b>${t('type')}:</b> ${catLabel(p.type)}</div>`,
+      `<div><b>${t('walkFromKKLLabel')}:</b> ${walkTimeHTML(p.walkMin)}</div>`
+    ];
+    if (expanded){
+      rows.splice(3, 0, `<div><b>${t('food')}:</b> ${p.food}</div>`);
+      if (p.access) rows.push(`<div><b>${t('access')}:</b> ${p.access}</div>`);
     }
+    return `${popupHeader(`${p.icon} ${p.id}. ${localizedField(p,'name')}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
+  }
 
-    function walkTimeHTML(min){
-      let cls = 'walk-green';
-      if (min >= 6 && min <= 10) cls = 'walk-amber';
-      else if (min > 10) cls = 'walk-red';
-      return `<span class="walk-badge ${cls}">🚶 ${min} min</span>`;
-    }
+  const rows = [
+    `<div><b>${t('category')}:</b> ${catLabel(p.type)}</div>`,
+    p.building ? `<div><b>${t('building')}:</b> ${p.building}</div>` : '',
+    p.location ? `<div><b>${t('location')}:</b> ${p.location}</div>` : '',
+    (p.grading || p.gradingZh) ? `<div><b>${t('historicGrading')}:</b> ${localizedField(p, 'grading')}</div>` : '',
+    p.walkMin ? `<div><b>${t('walkFromKKLLabel')}:</b> ${walkTimeHTML(p.walkMin)}</div>` : ''
+  ].filter(Boolean);
 
-    function getActiveData(){ return currentMode === 'visit' ? DATASETS.visit : DATASETS.food; }
+  if (expanded){
+    if (p.hours) rows.push(`<div><b>${t('openingHours')}:</b> ${p.hours}</div>`);
+    if (p.info) rows.push(`<div>${p.info}</div>`);
+  }
 
-    function catLabel(type){
-      const c = getActiveData().categories.find(x => x.key === type);
-      if (!c) return type;
-      return (currentLang === 'zh' && c.labelZh) ? c.labelZh : c.label;
-    }
+  return `${popupHeader(`${p.icon} ${p.id}. ${localizedField(p,'name')}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
+}
 
-    function clearActive(){
-      document.querySelectorAll('.marker.active').forEach(el=>el.classList.remove('active'));
-      document.querySelectorAll('.list button.active').forEach(el=>el.classList.remove('active'));
-    }
+function positionPopup(anchorEl){
+  const wrapRect = mapWrap.getBoundingClientRect();
+  const aRect = anchorEl.getBoundingClientRect();
 
-    function popupHeader(title){
-      if (isMobile()){
-        return `
-          <div class="popup-head">
-            <h4>${title}</h4>
-            <button class="popup-close" data-popup-close="1" aria-label="Close">✕</button>
-          </div>
-        `;
-      }
-      return `<div class="popup-head"><h4>${title}</h4></div>`;
-    }
+  const x = (aRect.left - wrapRect.left) + aRect.width / 2;
+  const y = (aRect.top - wrapRect.top) + aRect.height / 2;
 
-    function popupMoreBtnHTML(expanded){
-      if (!isMobile()) return '';
-      if (expanded) return '';
-      return `<div class="more-wrap"><button class="more-btn" data-popup-more="1">${t('more')}</button></div>`;
-    }
+  const pad = 8, gap = 10;
+  const w = popup.offsetWidth, h = popup.offsetHeight;
 
-    function popupHTML(p, expanded){
-      if (currentMode === 'food'){
-        const rows = [
-          `<div class="row"><b>${t('building')}:</b> ${p.building}</div>`,
-          `<div class="row"><b>${t('location')}:</b> ${p.location}</div>`,
-          `<div class="row"><b>${t('type')}:</b> ${catLabel(p.type)}</div>`,
-          `<div class="row"><b>${t('walkFromKKLLabel')}:</b> ${walkTimeHTML(p.walkMin)}</div>`
-        ];
-        if (expanded){
-          rows.splice(3, 0, `<div class="row"><b>${t('food')}:</b> ${p.food}</div>`);
-          if (p.access) rows.push(`<div class="row"><b>${t('access')}:</b> ${p.access}</div>`);
-        }
-        return `${popupHeader(`${p.icon} ${p.id}. ${localizedField(p,'name')}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
-      }
+  let left = x + gap;
+  let top = y - 8;
+  if (left + w > wrapRect.width - pad) left = x - w - gap;
+  if (left < pad) left = pad;
+  if (top < pad) top = pad;
+  if (top + h > wrapRect.height - pad) top = wrapRect.height - h - pad;
 
-      const rows = [
-        `<div class="row"><b>${t('category')}:</b> ${catLabel(p.type)}</div>`,
-        p.building ? `<div class="row"><b>${t('building')}:</b> ${p.building}</div>` : '',
-        p.location ? `<div class="row"><b>${t('location')}:</b> ${p.location}</div>` : '',
-        (p.grading || p.gradingZh) ? `<div class="row"><b>${t('historicGrading')}:</b> ${localizedField(p, 'grading')}</div>` : '',
-        p.walkMin ? `<div class="row"><b>${t('walkFromKKLLabel')}:</b> ${walkTimeHTML(p.walkMin)}</div>` : ''
-      ].filter(Boolean);
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+}
 
-      if (expanded){
-        if (p.hours) rows.push(`<div class="row"><b>${t('openingHours')}:</b> ${p.hours}</div>`);
-        if (p.info) rows.push(`<div class="row">${p.info}</div>`);
-      }
+function openPopup(anchorEl, html){
+  if (!anchorEl) return;
+  popup.innerHTML = html;
+  popup.style.display = 'block';
+  popup.scrollTop = 0;
+  activeAnchorEl = anchorEl;
 
-      return `${popupHeader(`${p.icon} ${p.id}. ${localizedField(p,'name')}`)}${rows.join('')}${popupMoreBtnHTML(expanded)}`;
-    }
+  if (isMobile()){
+    popup.classList.add('mobile-sheet');
+  } else {
+    popup.classList.remove('mobile-sheet');
+    positionPopup(anchorEl);
+  }
+}
 
-    function positionPopup(anchorEl){
-      const wrapRect = mapWrap.getBoundingClientRect();
-      const aRect = anchorEl.getBoundingClientRect();
+function openPointPopup(point, anchorEl){
+  currentPopupPoint = point;
+  popupExpanded = !isMobile();
+  openPopup(anchorEl, popupHTML(point, popupExpanded));
+}
 
-      const x = (aRect.left - wrapRect.left) + aRect.width / 2;
-      const y = (aRect.top - wrapRect.top) + aRect.height / 2;
+function focusPoint(p){
+  if (currentMode === 'route') return;
+  clearActive();
 
-      const pad = 8, gap = 10;
-      const w = popup.offsetWidth, h = popup.offsetHeight;
+  const marker = markerById.get(p.id);
+  const btn = listBtnById.get(p.id);
+  if (marker) marker.classList.add('active');
+  if (btn) btn.classList.add('active');
 
-      let left = x + gap;
-      let top = y - 8;
-      if (left + w > wrapRect.width - pad) left = x - w - gap;
-      if (left < pad) left = pad;
-      if (top < pad) top = pad;
-      if (top + h > wrapRect.height - pad) top = wrapRect.height - h - pad;
+  zoomToPoint(p.x, p.y, isMobile() ? 1.22 : 1.45);
+  setTimeout(() => openPointPopup(p, marker), 110);
 
-      popup.style.left = left + 'px';
-      popup.style.top = top + 'px';
-    }
+  if (isMobile()) setMobileTab('map');
+}
 
-    function openPopup(anchorEl, html){
-      if (!anchorEl) return;
-      popup.innerHTML = html;
-      popup.style.display = 'block';
-      popup.scrollTop = 0;
-      activeAnchorEl = anchorEl;
+function removePoiMarkers(){
+  document.querySelectorAll('.marker.poi').forEach(el => el.remove());
+  markerById.clear();
+}
 
-      if (isMobile()){
-        popup.classList.add('mobile-sheet');
+function createMarker(p){
+  const m = document.createElement('button');
+  m.className = 'marker poi';
+  m.style.left = p.x + '%';
+  m.style.top = p.y + '%';
+  m.innerHTML = p.icon;
+  m.title = localizedField(p, 'name');
+  m.dataset.type = p.type;
+
+  m.addEventListener('pointerdown', e => e.stopPropagation());
+  m.addEventListener('click', e => {
+    e.stopPropagation();
+    focusPoint(p);
+  });
+
+  mapStage.appendChild(m);
+  markerById.set(p.id, m);
+}
+
+function createHereMarker(){
+  if (hereMarkerEl) return;
+  const h = document.createElement('button');
+  h.className = 'marker here';
+  h.style.left = HERE.x + '%';
+  h.style.top = HERE.y + '%';
+  h.style.zIndex = '60';
+  h.innerHTML = '📍';
+  h.title = t('kklBuilding');
+
+  h.addEventListener('pointerdown', e => e.stopPropagation());
+  h.addEventListener('click', e => {
+    e.stopPropagation();
+    clearActive();
+    h.classList.add('active');
+    currentPopupPoint = null;
+    popupExpanded = false;
+    zoomToPoint(HERE.x, HERE.y, isMobile()?1.22:1.42);
+    openPopup(h, `${popupHeader(t('kklBuilding'))}<div>${t('youAreHere')}</div>`);
+  });
+  mapStage.appendChild(h);
+  hereMarkerEl = h;
+}
+
+function renderList(){
+  const data = getActiveData();
+  list.innerHTML = '';
+  listBtnById.clear();
+
+  data.items.forEach(p => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.innerHTML = `
+      <div><b>${p.icon} ${p.id}. ${localizedField(p,'name')}</b></div>
+      <div style="opacity:.75;font-size:12px">${catLabel(p.type)} ${p.building ? `• ${p.location ? p.location + ', ' : ''}${p.building}` : ''}</div>
+      <div style="margin-top:4px">${p.walkMin ? walkTimeHTML(p.walkMin) + ' ' + t('fromKKL') : ''}</div>
+    `;
+    b.addEventListener('click', () => focusPoint(p));
+    li.appendChild(b);
+    list.appendChild(li);
+    listBtnById.set(p.id, b);
+  });
+}
+
+function renderFilterBar(){
+  const data = getActiveData();
+  filterBar.innerHTML = '';
+  if (currentMode === 'route') return;
+
+  const allChip = document.createElement('button');
+  allChip.className = 'chip active';
+  allChip.textContent = t('all');
+  allChip.dataset.type = 'all';
+  filterBar.appendChild(allChip);
+
+  data.categories.forEach(c => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.textContent = `${c.icon} ${currentLang === 'zh' ? (c.labelZh || c.label) : c.label}`;
+    chip.dataset.type = c.key;
+    filterBar.appendChild(chip);
+  });
+
+  filterBar.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const ttype = chip.dataset.type;
+      if (ttype === 'all'){
+        selectedTypes = null;
       } else {
-        popup.classList.remove('mobile-sheet');
-        positionPopup(anchorEl);
+        if (!selectedTypes) selectedTypes = new Set();
+        if (selectedTypes.has(ttype)) selectedTypes.delete(ttype); else selectedTypes.add(ttype);
+        if (selectedTypes.size === 0) selectedTypes = null;
       }
-    }
-
-    function openPointPopup(point, anchorEl){
-      currentPopupPoint = point;
-      popupExpanded = !isMobile();
-      openPopup(anchorEl, popupHTML(point, popupExpanded));
-    }
-
-    function focusPoint(p){
-      if (currentMode === 'route') return;
-      clearActive();
-
-      const marker = markerById.get(p.id);
-      const btn = listBtnById.get(p.id);
-      if (marker) marker.classList.add('active');
-      if (btn) btn.classList.add('active');
-
-      zoomToPoint(p.x, p.y, isMobile() ? 1.22 : 1.45);
-      setTimeout(() => openPointPopup(p, marker), 110);
-
-      if (isMobile()) setMobileTab('map');
-    }
-
-    function removePoiMarkers(){
-      document.querySelectorAll('.marker.poi').forEach(el => el.remove());
-      markerById.clear();
-    }
-
-    function createMarker(p){
-      const m = document.createElement('button');
-      m.className = 'marker poi';
-      m.style.left = p.x + '%';
-      m.style.top = p.y + '%';
-      m.innerHTML = p.icon;
-      m.title = localizedField(p, 'name');
-      m.dataset.type = p.type;
-
-      m.addEventListener('pointerdown', e => e.stopPropagation());
-      m.addEventListener('click', e => {
-        e.stopPropagation();
-        focusPoint(p);
-      });
-
-      mapStage.appendChild(m);
-      markerById.set(p.id, m);
-    }
-
-    function createHereMarker(){
-      if (hereMarkerEl) return;
-      const h = document.createElement('button');
-      h.className = 'marker here';
-      h.style.left = HERE.x + '%';
-      h.style.top = HERE.y + '%';
-      h.style.zIndex = '60';
-      h.innerHTML = '📍';
-      h.title = t('kklBuilding');
-
-      h.addEventListener('pointerdown', e => e.stopPropagation());
-      h.addEventListener('click', e => {
-        e.stopPropagation();
-        clearActive();
-        h.classList.add('active');
-        currentPopupPoint = null;
-        popupExpanded = false;
-        zoomToPoint(HERE.x, HERE.y, isMobile()?1.22:1.42);
-        openPopup(h, `${popupHeader(t('kklBuilding'))}<div class="row">${t('youAreHere')}</div>`);
-      });
-      mapStage.appendChild(h);
-      hereMarkerEl = h;
-    }
-
-    function renderList(){
-      const data = getActiveData();
-      list.innerHTML = '';
-      listBtnById.clear();
-
-      data.items.forEach(p => {
-        const li = document.createElement('li');
-        const b = document.createElement('button');
-        b.innerHTML = `
-          <div class="i1">${p.icon} ${p.id}. ${localizedField(p,'name')}</div>
-          <div class="i2">${catLabel(p.type)} ${p.building ? `• ${p.location ? p.location + ', ' : ''}${p.building}` : ''}</div>
-          <div class="i3">${p.walkMin ? walkTimeHTML(p.walkMin) + ' ' + t('fromKKL') : ''}</div>
-        `;
-        b.addEventListener('click', () => focusPoint(p));
-        li.appendChild(b);
-        list.appendChild(li);
-        listBtnById.set(p.id, b);
-      });
-    }
-
-    function renderFilterBar(){
-      const data = getActiveData();
-      filterBar.innerHTML = '';
-      if (currentMode === 'route') return;
-
-      const allChip = document.createElement('button');
-      allChip.className = 'chip active';
-      allChip.textContent = t('all');
-      allChip.dataset.type = 'all';
-      filterBar.appendChild(allChip);
-
-      data.categories.forEach(c => {
-        const chip = document.createElement('button');
-        chip.className = 'chip';
-        chip.textContent = `${c.icon} ${currentLang === 'zh' ? (c.labelZh || c.label) : c.label}`;
-        chip.dataset.type = c.key;
-        filterBar.appendChild(chip);
-      });
-
-      filterBar.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          const ttype = chip.dataset.type;
-          if (ttype === 'all'){
-            selectedTypes = null;
-          } else {
-            if (!selectedTypes) selectedTypes = new Set();
-            if (selectedTypes.has(ttype)) selectedTypes.delete(ttype); else selectedTypes.add(ttype);
-            if (selectedTypes.size === 0) selectedTypes = null;
-          }
-          paintFilterState();
-          applyFilter();
-        });
-      });
-
       paintFilterState();
-    }
-
-    function paintFilterState(){
-      filterBar.querySelectorAll('.chip').forEach(ch => ch.classList.remove('active'));
-      const all = filterBar.querySelector('[data-type="all"]');
-      if (!selectedTypes || selectedTypes.size === 0){
-        all && all.classList.add('active');
-      } else {
-        selectedTypes.forEach(ttype => {
-          const chip = filterBar.querySelector(`[data-type="${ttype}"]`);
-          chip && chip.classList.add('active');
-        });
-      }
-    }
-
-    function applyFilter(){
-      if (currentMode === 'route') return;
-      const data = getActiveData();
-      let count = 0;
-
-      data.items.forEach(p => {
-        const show = !selectedTypes || selectedTypes.has(p.type);
-        const marker = markerById.get(p.id);
-        const btn = listBtnById.get(p.id);
-
-        if (marker) marker.style.display = show ? 'flex' : 'none';
-        if (btn) btn.closest('li').style.display = show ? '' : 'none';
-        if (show) count++;
-      });
-
-      listCount.textContent = count;
-      popup.style.display = 'none';
-      activeAnchorEl = null;
-      currentPopupPoint = null;
-      popupExpanded = false;
-      clearActive();
-    }
-
-    // ---------------- ROUTE ----------------
-    function showRouteHint(msg){ routeHint.style.display='block'; routeHint.textContent=msg; }
-    function hideRouteHint(){ routeHint.style.display='none'; routeHint.textContent=''; }
-
-    function clearRouteStartMarkers(){
-      routeStartMarkerByKey.forEach(el => el.remove());
-      routeStartMarkerByKey.clear();
-    }
-
-    function createRouteStartMarkers(){
-      clearRouteStartMarkers();
-
-      Object.entries(ROUTES_TO_KKL).forEach(([stationKey, route]) => {
-        const start = route.path[0];
-        const m = document.createElement('button');
-        m.className = 'marker poi';
-        m.style.left = `${start.x}%`;
-        m.style.top = `${start.y}%`;
-        m.style.zIndex = '28';
-        m.innerHTML = '🚉';
-        m.title = `${routeName(route)} (tap for route)`;
-
-        m.addEventListener('pointerdown', e => e.stopPropagation());
-        m.addEventListener('click', (e) => {
-          e.stopPropagation();
-          drawRouteToKKL(stationKey);
-        });
-
-        mapStage.appendChild(m);
-        routeStartMarkerByKey.set(stationKey, m);
-      });
-    }
-
-    function clearRoute(){
-      routeLayer.innerHTML = '';
-      if (walkerEl) { walkerEl.remove(); walkerEl = null; }
-      if (routeAnimId) { cancelAnimationFrame(routeAnimId); routeAnimId = null; }
-      hideRouteHint();
-    }
-
-    function pathMetrics(path){
-      const cum=[0];
-      for(let i=1;i<path.length;i++){
-        const dx=path[i].x-path[i-1].x, dy=path[i].y-path[i-1].y;
-        cum[i]=cum[i-1]+Math.hypot(dx,dy);
-      }
-      return {cum,total:cum[cum.length-1]};
-    }
-
-    function pointAt(path,cum,d){
-      if (d<=0) return path[0];
-      const total = cum[cum.length-1];
-      if (d >= total) return path[path.length - 1];
-
-      let i=1;
-      while(i<cum.length && cum[i]<d) i++;
-      const d0=cum[i-1], d1=cum[i];
-      const tt=(d-d0)/(d1-d0);
-
-      return {
-        x: path[i-1].x + (path[i].x - path[i-1].x) * tt,
-        y: path[i-1].y + (path[i].y - path[i-1].y) * tt
-      };
-    }
-
-    function drawRouteToKKL(stationKey){
-      const route = ROUTES_TO_KKL[stationKey];
-      if (!route) return;
-      lastRouteStationKey = stationKey;
-
-      clearRoute();
-
-      if (routeFsExitTimer){
-        clearTimeout(routeFsExitTimer);
-        routeFsExitTimer = null;
-      }
-      if (isMobile() && currentMode === 'route'){
-        setRouteFullscreen(true);
-      }
-
-      popup.style.display = 'none';
-      activeAnchorEl = null;
-      currentPopupPoint = null;
-      popupExpanded = false;
-      clearActive();
-
-      routeStartMarkerByKey.forEach(el => el.classList.remove('active'));
-      routeStartMarkerByKey.get(stationKey)?.classList.add('active');
-
-      routeFromSypBtn?.classList.toggle('active', stationKey === 'sypC');
-      routeFromHkuBtn?.classList.toggle('active', stationKey === 'hkuA2');
-
-      const ns = "http://www.w3.org/2000/svg";
-      const poly = document.createElementNS(ns, "polyline");
-      poly.setAttribute("points", route.path.map(p => `${p.x},${p.y}`).join(" "));
-      poly.setAttribute("fill", "none");
-      poly.setAttribute("stroke", "#2563eb");
-      poly.setAttribute("stroke-width", "1.15");
-      poly.setAttribute("stroke-linecap", "round");
-      poly.setAttribute("stroke-linejoin", "round");
-      routeLayer.appendChild(poly);
-
-      const start = route.path[0];
-      const end = route.path[route.path.length - 1];
-
-      const startDot = document.createElementNS(ns, "circle");
-      startDot.setAttribute("cx", start.x);
-      startDot.setAttribute("cy", start.y);
-      startDot.setAttribute("r", "1.1");
-      startDot.setAttribute("fill", "#0ea5e9");
-      routeLayer.appendChild(startDot);
-
-      const endDot = document.createElementNS(ns, "circle");
-      endDot.setAttribute("cx", end.x);
-      endDot.setAttribute("cy", end.y);
-      endDot.setAttribute("r", "1.25");
-      endDot.setAttribute("fill", "#dc2626");
-      routeLayer.appendChild(endDot);
-
-      walkerEl = document.createElement('button');
-      walkerEl.className = 'marker walker';
-      walkerEl.style.left = `${start.x}%`;
-      walkerEl.style.top = `${start.y}%`;
-      walkerEl.style.zIndex = '29';
-      walkerEl.textContent = '🚶';
-      walkerEl.title = 'Replay route';
-      walkerEl.addEventListener('pointerdown', e => e.stopPropagation());
-      walkerEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        drawRouteToKKL(stationKey);
-      });
-      mapStage.appendChild(walkerEl);
-
-      showRouteHint(`${t('routeFollowPrefix')} ${routeName(route)}: ${t('routeFollowSuffix')}`);
-
-      const xs = route.path.map(p => p.x);
-      const ys = route.path.map(p => p.y);
-      const minX = Math.min(...xs), maxX = Math.max(...xs);
-      const minY = Math.min(...ys), maxY = Math.max(...ys);
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-      zoomToPoint(centerX, centerY, isMobile() ? 1.25 : 1.45);
-
-      const {cum,total} = pathMetrics(route.path);
-      const milestones = (route.milestones || []).map(m => ({
-        d: cum[m.index],
-        shown: false,
-        message: i18nMessage(m.message)
-      }));
-
-      const duration = 11000;
-      const t0 = performance.now();
-
-      function frame(now){
-        const prog = Math.min((now - t0) / duration, 1);
-        const d = total * prog;
-        const pt = pointAt(route.path, cum, d);
-
-        walkerEl.style.left = `${pt.x}%`;
-        walkerEl.style.top = `${pt.y}%`;
-
-        milestones.forEach(m => {
-          if (!m.shown && d >= m.d){
-            m.shown = true;
-            showRouteHint(m.message);
-          }
-        });
-
-        if (prog < 1){
-          routeAnimId = requestAnimationFrame(frame);
-        } else {
-          routeAnimId = null;
-          showRouteHint(t('arrived'));
-
-          if (isMobile() && currentMode === 'route'){
-            if (routeFsExitTimer) clearTimeout(routeFsExitTimer);
-            routeFsExitTimer = setTimeout(() => {
-              setRouteFullscreen(false);
-            }, 3000);
-          }
-        }
-      }
-      routeAnimId = requestAnimationFrame(frame);
-    }
-
-    // ---------------- MOBILE ROUTE FULLSCREEN ----------------
-    function setRouteFullscreen(on){
-      if (!isMobile()) return;
-      document.body.classList.toggle('route-mobile-fs', on);
-    }
-
-    function updateMobileRouteUI(){
-      const inRouteMobile = isMobile() && currentMode === 'route';
-      document.body.classList.toggle('route-mobile', inRouteMobile);
-
-      if (!inRouteMobile){
-        setRouteFullscreen(false);
-        if (routeFsExitTimer){
-          clearTimeout(routeFsExitTimer);
-          routeFsExitTimer = null;
-        }
-      } else {
-        listPanel?.classList.remove('open');
-        setMobileTab('map');
-      }
-    }
-
-    // ---------------- LANGUAGE ----------------
-    function applyStaticUIText(){
-      foodModeBtn.textContent = t('foodBtn');
-      visitModeBtn.textContent = t('visitBtn');
-      routeModeBtn.textContent = t('routeBtn');
-      resetZoomBtn.textContent = t('resetZoom');
-      mapTabBtn.textContent = t('mapTab');
-      listTabBtn.textContent = t('listTab');
-      routeFromSypBtn.textContent = t('routeFromSyp');
-      routeFromHkuBtn.textContent = t('routeFromHku');
-      drawerHandle.textContent = t('drawerHandle');
-
-      stationPromptTitle.textContent = t('promptTitle');
-      stationSypBtn.textContent = t('promptSyp');
-      stationHkuBtn.textContent = t('promptHku');
-      cancelStationPrompt.textContent = t('cancel');
-
-      langEnBtn.classList.toggle('active', currentLang === 'en');
-      langZhBtn.classList.toggle('active', currentLang === 'zh');
-    }
-
-    function setLanguage(lang){
-      currentLang = lang;
-      applyStaticUIText();
-      switchMode(currentMode);
-
-      if (currentMode === 'route' && lastRouteStationKey){
-        drawRouteToKKL(lastRouteStationKey);
-      }
-
-      if (hereMarkerEl){
-        hereMarkerEl.title = t('kklBuilding');
-      }
-    }
-
-    // ---------------- MODE ----------------
-    function switchMode(mode){
-      currentMode = mode;
-      selectedTypes = null;
-      clearRoute();
-      popup.style.display = 'none';
-      activeAnchorEl = null;
-      currentPopupPoint = null;
-      popupExpanded = false;
-      clearActive();
-
-      foodModeBtn.classList.toggle('active', mode==='food');
-      visitModeBtn.classList.toggle('active', mode==='visit');
-      routeModeBtn.classList.toggle('active', mode==='route');
-
-      if (mode === 'route'){
-        mapTitle.textContent = t('routeTitle');
-        mapNote.textContent = t('routeNote');
-        mapNoteInline.textContent = t('routeNote');
-
-        routeButtons?.classList.add('show');
-
-        removePoiMarkers();
-        createRouteStartMarkers();
-        list.innerHTML = '';
-        listCount.textContent = '0';
-        filterBar.innerHTML = '';
-
-        resetView();
-        stationPrompt.classList.remove('show');
-        showRouteHint(t('routePickHint'));
-
-        if (isMobile()) setMobileTab('map');
-        updateMobileRouteUI();
-        return;
-      }
-
-      routeButtons?.classList.remove('show');
-      routeFromSypBtn?.classList.remove('active');
-      routeFromHkuBtn?.classList.remove('active');
-
-      clearRouteStartMarkers();
-      stationPrompt.classList.remove('show');
-
-      const data = getActiveData();
-      mapTitle.textContent = dsText(data, 'title');
-      mapNote.textContent = dsText(data, 'note');
-      mapNoteInline.textContent = dsText(data, 'note');
-      listLabel.textContent = dsText(data, 'listLabel');
-      listSubNote.textContent = dsText(data, 'listSubNote') || '';
-
-      removePoiMarkers();
-      data.items.forEach(createMarker);
-      renderList();
-      renderFilterBar();
       applyFilter();
-      resetView();
-
-      updateMobileRouteUI();
-    }
-
-    // ---------------- MOBILE MAP/LIST TABS ----------------
-    function setMobileTab(tab){
-      if (!isMobile()) return;
-      const showList = tab === 'list';
-      listPanel.classList.toggle('open', showList);
-      mapTabBtn.classList.toggle('active', !showList);
-      listTabBtn.classList.toggle('active', showList);
-    }
-
-    mapTabBtn?.addEventListener('click', ()=> setMobileTab('map'));
-    listTabBtn?.addEventListener('click', ()=> setMobileTab('list'));
-
-    drawerHandle?.addEventListener('click', ()=>{
-      if (!isMobile()) return;
-      if (currentMode === 'route') return;
-      listPanel.classList.toggle('open');
-      const open = listPanel.classList.contains('open');
-      mapTabBtn.classList.toggle('active', !open);
-      listTabBtn.classList.toggle('active', open);
     });
+  });
 
-    // ---------------- EVENTS ----------------
-    foodModeBtn.addEventListener('click', ()=>switchMode('food'));
-    visitModeBtn.addEventListener('click', ()=>switchMode('visit'));
-    routeModeBtn.addEventListener('click', ()=>switchMode('route'));
+  paintFilterState();
+}
 
-    langEnBtn.addEventListener('click', ()=> setLanguage('en'));
-    langZhBtn.addEventListener('click', ()=> setLanguage('zh'));
-
-    routeFromSypBtn?.addEventListener('click', () => drawRouteToKKL('sypC'));
-    routeFromHkuBtn?.addEventListener('click', () => drawRouteToKKL('hkuA2'));
-
-    cancelStationPrompt.addEventListener('click', ()=> stationPrompt.classList.remove('show'));
-    stationPrompt.querySelectorAll('[data-station]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        stationPrompt.classList.remove('show');
-        drawRouteToKKL(btn.dataset.station);
-      });
+function paintFilterState(){
+  filterBar.querySelectorAll('.chip').forEach(ch => ch.classList.remove('active'));
+  const all = filterBar.querySelector('[data-type="all"]');
+  if (!selectedTypes || selectedTypes.size === 0){
+    all && all.classList.add('active');
+  } else {
+    selectedTypes.forEach(ttype => {
+      const chip = filterBar.querySelector(`[data-type="${ttype}"]`);
+      chip && chip.classList.add('active');
     });
+  }
+}
 
-    popup.addEventListener('click', (e)=>{
-      const closeBtn = e.target.closest('[data-popup-close="1"]');
-      if (closeBtn){
-        e.stopPropagation();
-        popup.style.display = 'none';
-        activeAnchorEl = null;
-        currentPopupPoint = null;
-        popupExpanded = false;
-        return;
-      }
+function applyFilter(){
+  if (currentMode === 'route') return;
+  const data = getActiveData();
+  let count = 0;
 
-      const moreBtn = e.target.closest('[data-popup-more="1"]');
-      if (!moreBtn) return;
+  data.items.forEach(p => {
+    const show = !selectedTypes || selectedTypes.has(p.type);
+    const marker = markerById.get(p.id);
+    const btn = listBtnById.get(p.id);
+
+    if (marker) marker.style.display = show ? 'flex' : 'none';
+    if (btn) btn.closest('li').style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+
+  listCount.textContent = count;
+  popup.style.display = 'none';
+  activeAnchorEl = null;
+  currentPopupPoint = null;
+  popupExpanded = false;
+  clearActive();
+}
+
+// ---------------- ROUTE ----------------
+function showRouteHint(msg){ routeHint.style.display='block'; routeHint.textContent=msg; }
+function hideRouteHint(){ routeHint.style.display='none'; routeHint.textContent=''; }
+
+function clearRouteStartMarkers(){
+  routeStartMarkerByKey.forEach(el => el.remove());
+  routeStartMarkerByKey.clear();
+}
+
+function createRouteStartMarkers(){
+  clearRouteStartMarkers();
+
+  Object.entries(ROUTES_TO_KKL).forEach(([stationKey, route]) => {
+    const start = route.path[0];
+    const m = document.createElement('button');
+    m.className = 'marker poi';
+    m.style.left = `${start.x}%`;
+    m.style.top = `${start.y}%`;
+    m.style.zIndex = '28';
+    m.innerHTML = '🚉';
+    m.title = `${routeName(route)} (tap for route)`;
+
+    m.addEventListener('pointerdown', e => e.stopPropagation());
+    m.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (!currentPopupPoint) return;
-      popupExpanded = true;
-      openPopup(activeAnchorEl, popupHTML(currentPopupPoint, true));
+      drawRouteToKKL(stationKey);
     });
 
-    resetZoomBtn.addEventListener('click', ()=>{
-      resetView();
-      popup.style.display = 'none';
-      activeAnchorEl = null;
-      currentPopupPoint = null;
-      popupExpanded = false;
-      clearActive();
+    mapStage.appendChild(m);
+    routeStartMarkerByKey.set(stationKey, m);
+  });
+}
+
+function clearRoute(){
+  routeLayer.innerHTML = '';
+  if (walkerEl) { walkerEl.remove(); walkerEl = null; }
+  if (routeAnimId) { cancelAnimationFrame(routeAnimId); routeAnimId = null; }
+  hideRouteHint();
+}
+
+function pathMetrics(path){
+  const cum=[0];
+  for(let i=1;i<path.length;i++){
+    const dx=path[i].x-path[i-1].x, dy=path[i].y-path[i-1].y;
+    cum[i]=cum[i-1]+Math.hypot(dx,dy);
+  }
+  return {cum,total:cum[cum.length-1]};
+}
+
+function pointAt(path,cum,d){
+  if (d<=0) return path[0];
+  const total = cum[cum.length-1];
+  if (d >= total) return path[path.length - 1];
+
+  let i=1;
+  while(i<cum.length && cum[i]<d) i++;
+  const d0=cum[i-1], d1=cum[i];
+  const tt=(d-d0)/(d1-d0);
+
+  return {
+    x: path[i-1].x + (path[i].x - path[i-1].x) * tt,
+    y: path[i-1].y + (path[i].y - path[i-1].y) * tt
+  };
+}
+
+function drawRouteToKKL(stationKey){
+  const route = ROUTES_TO_KKL[stationKey];
+  if (!route) return;
+  lastRouteStationKey = stationKey;
+
+  clearRoute();
+
+  if (routeFsExitTimer){
+    clearTimeout(routeFsExitTimer);
+    routeFsExitTimer = null;
+  }
+  if (isMobile() && currentMode === 'route'){
+    setRouteFullscreen(true);
+  }
+
+  popup.style.display = 'none';
+  activeAnchorEl = null;
+  currentPopupPoint = null;
+  popupExpanded = false;
+  clearActive();
+
+  routeStartMarkerByKey.forEach(el => el.classList.remove('active'));
+  routeStartMarkerByKey.get(stationKey)?.classList.add('active');
+
+  routeFromSypBtn?.classList.toggle('active', stationKey === 'sypC');
+  routeFromHkuBtn?.classList.toggle('active', stationKey === 'hkuA2');
+
+  const ns = "http://www.w3.org/2000/svg";
+  const poly = document.createElementNS(ns, "polyline");
+  poly.setAttribute("points", route.path.map(p => `${p.x},${p.y}`).join(" "));
+  poly.setAttribute("fill", "none");
+  poly.setAttribute("stroke", "#2563eb");
+  poly.setAttribute("stroke-width", "1.15");
+  poly.setAttribute("stroke-linecap", "round");
+  poly.setAttribute("stroke-linejoin", "round");
+  routeLayer.appendChild(poly);
+
+  const start = route.path[0];
+  const end = route.path[route.path.length - 1];
+
+  const startDot = document.createElementNS(ns, "circle");
+  startDot.setAttribute("cx", start.x);
+  startDot.setAttribute("cy", start.y);
+  startDot.setAttribute("r", "1.1");
+  startDot.setAttribute("fill", "#0ea5e9");
+  routeLayer.appendChild(startDot);
+
+  const endDot = document.createElementNS(ns, "circle");
+  endDot.setAttribute("cx", end.x);
+  endDot.setAttribute("cy", end.y);
+  endDot.setAttribute("r", "1.25");
+  endDot.setAttribute("fill", "#dc2626");
+  routeLayer.appendChild(endDot);
+
+  walkerEl = document.createElement('button');
+  walkerEl.className = 'marker walker';
+  walkerEl.style.left = `${start.x}%`;
+  walkerEl.style.top = `${start.y}%`;
+  walkerEl.style.zIndex = '29';
+  walkerEl.textContent = '🚶';
+  walkerEl.title = 'Replay route';
+  walkerEl.addEventListener('pointerdown', e => e.stopPropagation());
+  walkerEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    drawRouteToKKL(stationKey);
+  });
+  mapStage.appendChild(walkerEl);
+
+  showRouteHint(`${t('routeFollowPrefix')} ${routeName(route)}: ${t('routeFollowSuffix')}`);
+
+  const xs = route.path.map(p => p.x);
+  const ys = route.path.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  zoomToPoint(centerX, centerY, isMobile() ? 1.25 : 1.45);
+
+  const {cum,total} = pathMetrics(route.path);
+  const milestones = (route.milestones || []).map(m => ({
+    d: cum[m.index],
+    shown: false,
+    message: i18nMessage(m.message)
+  }));
+
+  const duration = 11000;
+  const t0 = performance.now();
+
+  function frame(now){
+    const prog = Math.min((now - t0) / duration, 1);
+    const d = total * prog;
+    const pt = pointAt(route.path, cum, d);
+
+    walkerEl.style.left = `${pt.x}%`;
+    walkerEl.style.top = `${pt.y}%`;
+
+    milestones.forEach(m => {
+      if (!m.shown && d >= m.d){
+        m.shown = true;
+        showRouteHint(m.message);
+      }
     });
 
-    mapWrap.addEventListener('click', (e)=>{
-      if (e.target.closest('.marker')) return;
-      if (popup.contains(e.target)) return;
-      popup.style.display = 'none';
-      activeAnchorEl = null;
-      currentPopupPoint = null;
-      popupExpanded = false;
-      clearActive();
-    });
+    if (prog < 1){
+      routeAnimId = requestAnimationFrame(frame);
+    } else {
+      routeAnimId = null;
+      showRouteHint(t('arrived'));
 
-    mapWrap.addEventListener('wheel', (e)=>{
-      if (currentMode === 'route') return;
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.14 : -0.14;
-      zoomAt(e.clientX, e.clientY, scale + delta);
-    }, {passive:false});
-
-    let dragging = false;
-    let lastX = 0, lastY = 0;
-    let pinchStartDist = 0;
-    let pinchStartScale = 1;
-    let pinchCenter = null;
-
-    function touchDist(t1,t2){
-      const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY;
-      return Math.hypot(dx,dy);
+      if (isMobile() && currentMode === 'route'){
+        if (routeFsExitTimer) clearTimeout(routeFsExitTimer);
+        routeFsExitTimer = setTimeout(() => {
+          setRouteFullscreen(false);
+        }, 3000);
+      }
     }
-    function touchCenter(t1,t2){
-      return {x:(t1.clientX+t2.clientX)/2, y:(t1.clientY+t2.clientY)/2};
+  }
+  routeAnimId = requestAnimationFrame(frame);
+}
+
+// ---------------- MOBILE ROUTE FULLSCREEN ----------------
+function setRouteFullscreen(on){
+  if (!isMobile()) return;
+  document.body.classList.toggle('route-mobile-fs', on);
+}
+
+function updateMobileRouteUI(){
+  const inRouteMobile = isMobile() && currentMode === 'route';
+  document.body.classList.toggle('route-mobile', inRouteMobile);
+
+  if (!inRouteMobile){
+    setRouteFullscreen(false);
+    if (routeFsExitTimer){
+      clearTimeout(routeFsExitTimer);
+      routeFsExitTimer = null;
     }
+  } else {
+    listPanel?.classList.remove('open');
+    setMobileTab('map');
+  }
+}
 
-    mapWrap.addEventListener('pointerdown', (e)=>{
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      if (e.target.closest('.marker')) return;
-      if (popup.contains(e.target)) return;
-      if (scale <= 1) return;
+// ---------------- LANGUAGE ----------------
+function applyStaticUIText(){
+  foodModeBtn.textContent = t('foodBtn');
+  visitModeBtn.textContent = t('visitBtn');
+  routeModeBtn.textContent = t('routeBtn');
+  resetZoomBtn.textContent = t('resetZoom');
+  mapTabBtn.textContent = t('mapTab');
+  listTabBtn.textContent = t('listTab');
+  routeFromSypBtn.textContent = t('routeFromSyp');
+  routeFromHkuBtn.textContent = t('routeFromHku');
+  drawerHandle.textContent = t('drawerHandle');
 
-      dragging = true;
-      lastX = e.clientX; lastY = e.clientY;
-      mapWrap.setPointerCapture(e.pointerId);
-    });
+  stationPromptTitle.textContent = t('promptTitle');
+  stationSypBtn.textContent = t('promptSyp');
+  stationHkuBtn.textContent = t('promptHku');
+  cancelStationPrompt.textContent = t('cancel');
 
-    mapWrap.addEventListener('pointermove', (e)=>{
-      if (!dragging) return;
-      tx += (e.clientX - lastX);
-      ty += (e.clientY - lastY);
-      lastX = e.clientX; lastY = e.clientY;
-      clampPan();
-      applyTransform();
-    });
+  langEnBtn.classList.toggle('active', currentLang === 'en');
+  langZhBtn.classList.toggle('active', currentLang === 'zh');
+}
 
-    mapWrap.addEventListener('pointerup', ()=> dragging=false);
-    mapWrap.addEventListener('pointercancel', ()=> dragging=false);
+function setLanguage(lang){
+  currentLang = lang;
+  applyStaticUIText();
+  switchMode(currentMode);
 
-    mapWrap.addEventListener('touchstart', (e)=>{
-      if (e.touches.length === 2){
-        pinchStartDist = touchDist(e.touches[0], e.touches[1]);
-        pinchStartScale = scale;
-        pinchCenter = touchCenter(e.touches[0], e.touches[1]);
-      }
-    }, {passive:true});
+  if (currentMode === 'route' && lastRouteStationKey){
+    drawRouteToKKL(lastRouteStationKey);
+  }
 
-    mapWrap.addEventListener('touchmove', (e)=>{
-      if (e.touches.length === 2){
-        e.preventDefault();
-        const d = touchDist(e.touches[0], e.touches[1]);
-        const ratio = d / pinchStartDist;
-        zoomAt(pinchCenter.x, pinchCenter.y, pinchStartScale * ratio);
-      }
-    }, {passive:false});
+  if (hereMarkerEl){
+    hereMarkerEl.title = t('kklBuilding');
+  }
+}
 
-    window.addEventListener('resize', ()=>{
-      syncMapRatioFromImage();
-      clampPan();
-      applyTransform();
+// ---------------- MODE ----------------
+function switchMode(mode){
+  currentMode = mode;
+  selectedTypes = null;
+  clearRoute();
+  popup.style.display = 'none';
+  activeAnchorEl = null;
+  currentPopupPoint = null;
+  popupExpanded = false;
+  clearActive();
 
-      if (!isMobile()){
-        listPanel.classList.remove('open');
-      }
-      if (popup.style.display === 'block' && activeAnchorEl && !isMobile()){
-        positionPopup(activeAnchorEl);
-      }
+  foodModeBtn.classList.toggle('active', mode==='food');
+  visitModeBtn.classList.toggle('active', mode==='visit');
+  routeModeBtn.classList.toggle('active', mode==='route');
 
-      updateMobileRouteUI();
-    });
+  if (mode === 'route'){
+    mapTitle.textContent = t('routeTitle');
+    mapNote.textContent = t('routeNote');
+    listLabel.textContent = '';
+    listSubNote.textContent = '';
 
-    // ---------------- INIT ----------------
-    const mobileTabs = document.querySelector('.mobile-tabs');
-    if (isMobile() && mobileTabs && mapWrap && mapWrap.parentNode) {
-      mapWrap.parentNode.insertBefore(mobileTabs, mapWrap);
-    }
+    routeButtons?.classList.add('show');
 
-    if (mapImage.complete) syncMapRatioFromImage();
-    else mapImage.addEventListener('load', syncMapRatioFromImage);
+    removePoiMarkers();
+    createRouteStartMarkers();
+    list.innerHTML = '';
+    listCount.textContent = '0';
+    filterBar.innerHTML = '';
 
-    createHereMarker();
-    setLanguage('en');
-    switchMode('food');
-    applyTransform();
+    resetView();
+    stationPrompt.classList.remove('show');
+    showRouteHint(t('routePickHint'));
+
     if (isMobile()) setMobileTab('map');
     updateMobileRouteUI();
-  </script>
+    return;
+  }
+
+  routeButtons?.classList.remove('show');
+  routeFromSypBtn?.classList.remove('active');
+  routeFromHkuBtn?.classList.remove('active');
+
+  clearRouteStartMarkers();
+  stationPrompt.classList.remove('show');
+
+  const data = getActiveData();
+  mapTitle.textContent = dsText(data, 'title');
+  mapNote.textContent = dsText(data, 'note');
+  listLabel.textContent = dsText(data, 'listLabel');
+  listSubNote.textContent = dsText(data, 'listSubNote') || '';
+
+  removePoiMarkers();
+  data.items.forEach(createMarker);
+  renderList();
+  renderFilterBar();
+  applyFilter();
+  resetView();
+
+  updateMobileRouteUI();
+}
+
+// ---------------- MOBILE MAP/LIST TABS ----------------
+function toggleListOpen(open){
+  if (!isMobile()) return;
+  if (currentMode === 'route') return;
+  listPanel.classList.toggle('open', open);
+  mapTabBtn.classList.toggle('active', !open);
+  listTabBtn.classList.toggle('active', open);
+}
+
+function setMobileTab(tab){
+  if (!isMobile()) return;
+  toggleListOpen(tab === 'list');
+}
+
+mapTabBtn?.addEventListener('click', ()=> setMobileTab('map'));
+listTabBtn?.addEventListener('click', ()=> setMobileTab('list'));
+
+drawerHandle?.addEventListener('click', ()=>{
+  if (!isMobile()) return;
+  if (currentMode === 'route') return;
+  const open = !listPanel.classList.contains('open');
+  toggleListOpen(open);
+});
+
+// swipe support on mobile drawer handle
+let handleTouchStartY = null;
+let handleTouchDeltaY = 0;
+const SWIPE_OPEN_THRESHOLD = 35;
+const SWIPE_CLOSE_THRESHOLD = 45;
+
+drawerHandle?.addEventListener('touchstart', (e) => {
+  if (!isMobile() || currentMode === 'route') return;
+  if (!e.touches || e.touches.length !== 1) return;
+  handleTouchStartY = e.touches[0].clientY;
+  handleTouchDeltaY = 0;
+}, { passive: true });
+
+drawerHandle?.addEventListener('touchmove', (e) => {
+  if (handleTouchStartY == null) return;
+  handleTouchDeltaY = e.touches[0].clientY - handleTouchStartY;
+}, { passive: true });
+
+drawerHandle?.addEventListener('touchend', () => {
+  if (!isMobile() || currentMode === 'route') {
+    handleTouchStartY = null;
+    return;
+  }
+
+  if (handleTouchDeltaY < -SWIPE_OPEN_THRESHOLD) {
+    toggleListOpen(true); // swipe up
+  } else if (handleTouchDeltaY > SWIPE_CLOSE_THRESHOLD) {
+    toggleListOpen(false); // swipe down
+  }
+
+  handleTouchStartY = null;
+  handleTouchDeltaY = 0;
+}, { passive: true });
+
+// ---------------- EVENTS ----------------
+foodModeBtn.addEventListener('click', ()=>switchMode('food'));
+visitModeBtn.addEventListener('click', ()=>switchMode('visit'));
+routeModeBtn.addEventListener('click', ()=>switchMode('route'));
+
+langEnBtn.addEventListener('click', ()=> setLanguage('en'));
+langZhBtn.addEventListener('click', ()=> setLanguage('zh'));
+
+routeFromSypBtn?.addEventListener('click', () => drawRouteToKKL('sypC'));
+routeFromHkuBtn?.addEventListener('click', () => drawRouteToKKL('hkuA2'));
+
+cancelStationPrompt.addEventListener('click', ()=> stationPrompt.classList.remove('show'));
+stationPrompt.querySelectorAll('[data-station]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    stationPrompt.classList.remove('show');
+    drawRouteToKKL(btn.dataset.station);
+  });
+});
+
+popup.addEventListener('click', (e)=>{
+  const closeBtn = e.target.closest('[data-popup-close="1"]');
+  if (closeBtn){
+    e.stopPropagation();
+    popup.style.display = 'none';
+    activeAnchorEl = null;
+    currentPopupPoint = null;
+    popupExpanded = false;
+    return;
+  }
+
+  const moreBtn = e.target.closest('[data-popup-more="1"]');
+  if (!moreBtn) return;
+  e.stopPropagation();
+  if (!currentPopupPoint) return;
+  popupExpanded = true;
+  openPopup(activeAnchorEl, popupHTML(currentPopupPoint, true));
+});
+
+resetZoomBtn.addEventListener('click', ()=>{
+  resetView();
+  popup.style.display = 'none';
+  activeAnchorEl = null;
+  currentPopupPoint = null;
+  popupExpanded = false;
+  clearActive();
+});
+
+mapWrap.addEventListener('click', (e)=>{
+  if (e.target.closest('.marker')) return;
+  if (popup.contains(e.target)) return;
+  popup.style.display = 'none';
+  activeAnchorEl = null;
+  currentPopupPoint = null;
+  popupExpanded = false;
+  clearActive();
+});
+
+mapWrap.addEventListener('wheel', (e)=>{
+  if (currentMode === 'route') return;
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.14 : -0.14;
+  zoomAt(e.clientX, e.clientY, scale + delta);
+}, {passive:false});
+
+let dragging = false;
+let lastX = 0, lastY = 0;
+let pinchStartDist = 0;
+let pinchStartScale = 1;
+let pinchCenter = null;
+
+function touchDist(t1,t2){
+  const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY;
+  return Math.hypot(dx,dy);
+}
+function touchCenter(t1,t2){
+  return {x:(t1.clientX+t2.clientX)/2, y:(t1.clientY+t2.clientY)/2};
+}
+
+mapWrap.addEventListener('pointerdown', (e)=>{
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (e.target.closest('.marker')) return;
+  if (popup.contains(e.target)) return;
+  if (scale <= 1) return;
+
+  dragging = true;
+  lastX = e.clientX; lastY = e.clientY;
+  mapWrap.setPointerCapture(e.pointerId);
+});
+
+mapWrap.addEventListener('pointermove', (e)=>{
+  if (!dragging) return;
+  tx += (e.clientX - lastX);
+  ty += (e.clientY - lastY);
+  lastX = e.clientX; lastY = e.clientY;
+  clampPan();
+  applyTransform();
+});
+
+mapWrap.addEventListener('pointerup', ()=> dragging=false);
+mapWrap.addEventListener('pointercancel', ()=> dragging=false);
+
+mapWrap.addEventListener('touchstart', (e)=>{
+  if (e.touches.length === 2){
+    pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+    pinchStartScale = scale;
+    pinchCenter = touchCenter(e.touches[0], e.touches[1]);
+  }
+}, {passive:true});
+
+mapWrap.addEventListener('touchmove', (e)=>{
+  if (e.touches.length === 2){
+    e.preventDefault();
+    const d = touchDist(e.touches[0], e.touches[1]);
+    const ratio = d / pinchStartDist;
+    zoomAt(pinchCenter.x, pinchCenter.y, pinchStartScale * ratio);
+  }
+}, {passive:false});
+
+window.addEventListener('resize', ()=>{
+  syncMapRatioFromImage();
+  clampPan();
+  applyTransform();
+
+  if (!isMobile()){
+    listPanel.classList.remove('open');
+  }
+  if (popup.style.display === 'block' && activeAnchorEl && !isMobile()){
+    positionPopup(activeAnchorEl);
+  }
+
+  updateMobileRouteUI();
+});
+
+// ---------------- INIT ----------------
+const mobileTabs = document.querySelector('.mobile-tabs');
+if (isMobile() && mobileTabs && mapWrap && mapWrap.parentNode) {
+  mapWrap.parentNode.insertBefore(mobileTabs, mapWrap);
+}
+
+if (mapImage.complete) syncMapRatioFromImage();
+else mapImage.addEventListener('load', syncMapRatioFromImage);
+
+createHereMarker();
+setLanguage('en');
+switchMode('food');
+applyTransform();
+if (isMobile()) setMobileTab('map');
+updateMobileRouteUI();
+   </script>
 </body>
 </html>
